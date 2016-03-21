@@ -31,7 +31,6 @@ namespace {
         uint64_t processed_words_count;
         float alpha;
         decltype(std::chrono::high_resolution_clock::now()) start_time;
-        std::mutex lock;
 
         const yzw2v::train::UnigramDistribution unigram_distribution_;
 
@@ -101,7 +100,6 @@ namespace {
             , shared_data_{shared_data}
             , neu1_{neu1_holder_.get()}
             , neu1e_{neu1e_holder_.get()}
-            , alpha_{params.starting_alpha}
             , vocab_{vocab}
             , huff_{huffman_tree}
             , prng_{params.prng_seed}
@@ -140,7 +138,6 @@ namespace {
         SharedData& shared_data_;
         float* const neu1_;
         float* const neu1e_;
-        float alpha_;
 
         const yzw2v::vocab::Vocabulary& vocab_;
         const yzw2v::huff::HuffmanTree& huff_;
@@ -205,8 +202,6 @@ uint32_t ModelTrainer::SampleFromUnigramDistribution() noexcept {
 }
 
 void ModelTrainer::ReportAndUpdateAlpha() {
-    std::lock_guard<std::mutex> guard{shared_data_.lock};
-
     shared_data_.processed_words_count += word_count_ - prev_word_count_;
     prev_word_count_ = word_count_;
     Report(shared_data_.alpha, shared_data_.processed_words_count, text_words_count_,
@@ -223,7 +218,6 @@ void ModelTrainer::ReportAndUpdateAlpha() {
     }
 
     shared_data_.alpha = new_alpha;
-    alpha_ = new_alpha;
 }
 
 void ModelTrainer::ReadSentence() {
@@ -264,7 +258,6 @@ void ModelTrainer::ReadSentence() {
     sentence_position_ = 0;
 
     if (token_reader_.Done()) {
-        std::lock_guard<std::mutex> guard{shared_data_.lock};
         shared_data_.processed_words_count += word_count_ - prev_word_count_;
         ++iteration_;
 
@@ -307,7 +300,7 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
             f = shared_data_.exp_table[exp_index];
         }
 
-        const auto g = (1.0f - token.code[index] - f) * alpha_;
+        const auto g = (1.0f - token.code[index] - f) * shared_data_.alpha;
         yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1hs + shift, g);
         yzw2v::num::AddVector(shared_data_.syn1hs + shift, p_.vector_size, neu1e_, g);
     }
@@ -339,14 +332,14 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
 
         auto g = float{};
         if (f > MAX_EXP_FLT) {
-            g = (label - 1) * alpha_;
+            g = (label - 1) * shared_data_.alpha;
         } else if (f < -MAX_EXP_FLT) {
-            g = (label - 0) * alpha_;
+            g = (label - 0) * shared_data_.alpha;
         } else {
             const auto exp_index = static_cast<uint32_t>(
                     (f + MAX_EXP_FLT) * (EXP_TABLE_SIZE / MAX_EXP / 2)
                     );
-            g = (label - shared_data_.exp_table[exp_index]) * alpha_;
+            g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
         yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1neg + shift, g);
