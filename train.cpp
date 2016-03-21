@@ -28,7 +28,7 @@ static constexpr uint32_t UNIGRAM_TABLE_SIZE = 100000000;
 
 namespace {
     struct SharedData {
-        const yzw2v::train::UnigramDistribution unigram_distribution_;
+        const yzw2v::train::UnigramDistribution unigram_distribution;
 
         const float* const exp_table;
         float* const syn0; // vocabulary_size * vector_size
@@ -48,7 +48,7 @@ namespace {
                    const uint32_t unigram_table_size,
                    const yzw2v::vocab::Vocabulary& vocab,
                    PRNG&& prng)
-            : unigram_distribution_{unigram_table_size, vocab, prng}
+            : unigram_distribution{unigram_table_size, vocab, prng}
             , exp_table{exp_table_}
             , syn0{syn0_}
             , syn1hs{syn1hs_}
@@ -104,7 +104,7 @@ namespace {
             , huff_{huffman_tree}
             , prng_{params.prng_seed}
             , uniform_window_{0, params.window_size}
-            , unigram_distribution_cur_index_{static_cast<uint32_t>(prng_() % shared_data_.unigram_distribution_.size())}
+            , unigram_distribution_cur_index_{static_cast<uint32_t>(prng_() % shared_data_.unigram_distribution.size())}
             , sentence_position_{0}
             , prev_word_count_{0}
             , word_count_{0}
@@ -194,11 +194,11 @@ void ModelTrainer::TrainCBOW() {
 }
 
 uint32_t ModelTrainer::SampleFromUnigramDistribution() noexcept {
-    if (YZ_UNLIKELY(unigram_distribution_cur_index_ == shared_data_.unigram_distribution_.size())) {
+    if (YZ_UNLIKELY(unigram_distribution_cur_index_ == shared_data_.unigram_distribution.size())) {
         unigram_distribution_cur_index_ = 0;
     }
 
-    return shared_data_.unigram_distribution_[unigram_distribution_cur_index_++];
+    return shared_data_.unigram_distribution[unigram_distribution_cur_index_++];
 }
 
 void ModelTrainer::ReportAndUpdateAlpha() {
