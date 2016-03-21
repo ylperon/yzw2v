@@ -28,16 +28,16 @@ static constexpr uint32_t UNIGRAM_TABLE_SIZE = 100000000;
 
 namespace {
     struct SharedData {
-        uint64_t processed_words_count;
-        float alpha;
-        decltype(std::chrono::high_resolution_clock::now()) start_time;
-
         const yzw2v::train::UnigramDistribution unigram_distribution_;
 
         const float* const exp_table;
         float* const syn0; // vocabulary_size * vector_size
         float* const syn1hs; // vocabulary_size * vector_size
         float* const syn1neg; // vocabulary_size * vector_size
+
+        uint64_t processed_words_count;
+        float alpha;
+        decltype(std::chrono::high_resolution_clock::now()) start_time;
 
         template <typename PRNG>
         SharedData(const float alpha_,
@@ -48,15 +48,15 @@ namespace {
                    const uint32_t unigram_table_size,
                    const yzw2v::vocab::Vocabulary& vocab,
                    PRNG&& prng)
-            : processed_words_count{}
-            , alpha{alpha_}
-            , unigram_distribution_{unigram_table_size, vocab, prng}
+            : unigram_distribution_{unigram_table_size, vocab, prng}
             , exp_table{exp_table_}
             , syn0{syn0_}
             , syn1hs{syn1hs_}
             , syn1neg{syn1neg_}
+            , processed_words_count{}
+            , alpha{alpha_}
+            , start_time{std::chrono::high_resolution_clock::now()}
         {
-            start_time = std::chrono::high_resolution_clock::now();
         }
     };
 } // namespace
