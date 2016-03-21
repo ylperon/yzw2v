@@ -93,6 +93,7 @@ namespace {
                      const yzw2v::vocab::Vocabulary& vocab,
                      const yzw2v::huff::HuffmanTree& huffman_tree,
                      const yzw2v::train::Params& params,
+                     const uint32_t seed,
                      SharedData& shared_data)
             : p_{params}
             , neu1_holder_{yzw2v::mem::AllocateFloatForSIMD(params.vector_size)}
@@ -102,9 +103,10 @@ namespace {
             , neu1e_{neu1e_holder_.get()}
             , vocab_{vocab}
             , huff_{huffman_tree}
-            , prng_{params.prng_seed}
+            , prng_{seed}
             , uniform_window_{0, params.window_size}
-            , unigram_distribution_cur_index_{static_cast<uint32_t>(prng_() % shared_data_.unigram_distribution.size())}
+            , unigram_distribution_start_{static_cast<uint32_t>(prng_() % shared_data_.unigram_distribution.size())}
+            , unigram_distribution_cur_index_{(unigram_distribution_start_ + 1) % shared_data_.unigram_distribution.size()}
             , sentence_position_{0}
             , prev_word_count_{0}
             , word_count_{0}
@@ -146,6 +148,7 @@ namespace {
         std::uniform_int_distribution<uint32_t> uniform_window_;
         std::uniform_real_distribution<float> uniform01_;
 
+        uint32_t unigram_distribution_start_;
         uint32_t unigram_distribution_cur_index_;
 
         std::vector<uint32_t> sentence_;
@@ -196,6 +199,12 @@ void ModelTrainer::TrainCBOW() {
 uint32_t ModelTrainer::SampleFromUnigramDistribution() noexcept {
     if (YZ_UNLIKELY(unigram_distribution_cur_index_ == shared_data_.unigram_distribution.size())) {
         unigram_distribution_cur_index_ = 0;
+    }
+
+    if (YZ_UNLIKELY(unigram_distribution_cur_index_ == unigram_distribution_start_)) {
+        unigram_distribution_start_ = prng_() % shared_data_.unigram_distribution.size();
+        unigram_distribution_cur_index_ = (unigram_distribution_start_ + 1)
+                                          % shared_data_.unigram_distribution.size();
     }
 
     return shared_data_.unigram_distribution[unigram_distribution_cur_index_++];
@@ -436,16 +445,18 @@ yzw2v::train::Model yzw2v::train::TrainCBOWModel(const std::string& path,
                            res.matrix_holder.get(), syn1hs_holder.get(), syn1neg_holder.get(),
                            exp_table_holder.get(), UNIGRAM_TABLE_SIZE, vocab, prng};
     auto jobs = std::vector<std::future<void>>{};
-    for (auto offset = uint64_t{}; offset < file_size; offset += bytes_per_thread) {
+    auto job_index = uint32_t{};
+    for (auto offset = uint64_t{}; offset < file_size; offset += bytes_per_thread, ++job_index) {
         auto bytes_per_this_thread = bytes_per_thread;
         if (offset + bytes_per_thread + bytes_per_thread_remainder == file_size) {
             bytes_per_this_thread += bytes_per_thread_remainder;
         }
 
         jobs.emplace_back(std::async(std::launch::async,
-            [&path, &vocab, &huffman_tree, &params, &shared_data, offset, bytes_per_this_thread]{
+            [&path, &vocab, &huffman_tree, &params, &shared_data, offset, bytes_per_this_thread,
+             job_index]{
                 ModelTrainer trainer{path, offset, bytes_per_this_thread,
-                                     vocab, huffman_tree, params, shared_data};
+                                     vocab, huffman_tree, params, job_index, shared_data};
                 trainer.TrainCBOW();
         }));
     }
