@@ -28,6 +28,38 @@ static constexpr float MAX_EXP_FLT = static_cast<float>(MAX_EXP);
 static constexpr uint32_t UNIGRAM_TABLE_SIZE = 100000000;
 
 namespace {
+    class PRNG {
+    public:
+        using result_type = uint64_t;
+
+        explicit PRNG(const uint64_t state)
+            : state_{state}
+        {
+        }
+
+        uint64_t operator()() noexcept {
+            state_ = state_ * uint64_t{25214903917} + uint64_t{11};
+            return state_;
+        }
+
+        static constexpr uint64_t min() noexcept {
+            return 0;
+        }
+
+        static constexpr uint64_t max() noexcept {
+            return std::numeric_limits<uint64_t>::max();
+        }
+
+        void discard(uint64_t n) noexcept {
+            for (; n; --n) {
+                operator()();
+            }
+        }
+
+    private:
+        uint64_t state_;
+    };
+
     struct SharedData {
         const yzw2v::train::UnigramDistribution unigram_distribution;
 
@@ -142,7 +174,7 @@ namespace {
         const yzw2v::vocab::Vocabulary& vocab_;
         const yzw2v::huff::HuffmanTree& huff_;
 
-        std::minstd_rand prng_;
+        PRNG prng_;
         std::uniform_int_distribution<uint32_t> uniform_window_;
         std::uniform_real_distribution<float> uniform01_;
 
@@ -433,7 +465,7 @@ yzw2v::train::Model yzw2v::train::TrainCBOWModel(const std::string& path,
     const auto exp_table_holder = std::unique_ptr<const float[]>(GenerateExpTable(EXP_TABLE_SIZE));
 
     auto res = Model{vocab.size(), params.vector_size, mem::AllocateFloatForSIMD(matrix_size)};
-    std::minstd_rand prng{params.prng_seed};
+    PRNG prng{params.prng_seed};
     InitializeMatrix(vocab.size(), params.vector_size, res.matrix_holder.get(), prng);
 
     const auto file_size = io::FileSize(path);
