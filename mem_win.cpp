@@ -10,7 +10,7 @@ void yzw2v::mem::detail::Deleter::operator ()(void* const ptr) const noexcept {
 
 std::unique_ptr<float, yzw2v::mem::detail::Deleter>
 yzw2v::mem::AllocateFloatForSIMD(const uint32_t size) {
-    auto* const res = reinterpret_cast<float*>(_aligned_malloc(sizeof(float) * size, 128));
+    auto* const res = reinterpret_cast<float*>(_aligned_malloc(sizeof(float) * size, 256));
     if (!res) {
         std::runtime_error{"aligned allocation failed"};
     }
