@@ -19,6 +19,7 @@
 #include <random>
 
 #include <cmath>
+#include <cstdio>
 
 static constexpr uint64_t PER_THREAD_WORD_COUNT_TO_UPDATE_PARAMS = 10000;
 static constexpr size_t EXP_TABLE_SIZE = 1000;
@@ -38,8 +39,6 @@ namespace {
         uint64_t processed_words_count;
         float alpha;
         decltype(std::chrono::high_resolution_clock::now()) start_time;
-
-        std::mutex log_lock;
 
         template <typename PRNG>
         SharedData(const float alpha_,
@@ -71,19 +70,16 @@ static std::chrono::seconds GetTimePassed(const SharedData& data) {
 
 static void Report(const float alpha, const uint64_t words_processed_count,
                    const uint64_t text_words_count, const uint32_t iterations_requested_for_model,
-                   const std::chrono::seconds seconds_passed, std::ostream& out) {
+                   const std::chrono::seconds seconds_passed) {
     const auto progress = static_cast<double>(words_processed_count) // possible overflow
                           / (text_words_count * iterations_requested_for_model)
                           * 100;
     const auto words_per_sec = static_cast<double>(words_processed_count)
                                / (seconds_passed.count() + 1)
                                / 1000;
-    out << "[trainer]"
-        << std::fixed
-        << ' ' << "progress=" << progress << '%'
-        << ' ' << "alpha=" << alpha
-        << ' ' << "words/sec=" << words_per_sec << 'K'
-        << '\r';
+
+    fprintf(stdout, "%c[trainer] progress=%.6lf%% alpha=%.6lf words/sec=%.2lfK  ",
+           13, progress, alpha, words_per_sec);
 }
 
 namespace {
@@ -215,11 +211,8 @@ uint32_t ModelTrainer::SampleFromUnigramDistribution() noexcept {
 void ModelTrainer::ReportAndUpdateAlpha() {
     shared_data_.processed_words_count += word_count_ - prev_word_count_;
     prev_word_count_ = word_count_;
-    {
-        std::lock_guard<std::mutex> lock{shared_data_.log_lock};
-        Report(shared_data_.alpha, shared_data_.processed_words_count, text_words_count_,
-                p_.iterations_count, GetTimePassed(shared_data_), std::clog);
-    }
+    Report(shared_data_.alpha, shared_data_.processed_words_count, text_words_count_,
+            p_.iterations_count, GetTimePassed(shared_data_));
 
     auto new_alpha = static_cast<float>(
             p_.starting_alpha
