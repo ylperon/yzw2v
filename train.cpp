@@ -39,6 +39,8 @@ namespace {
         float alpha;
         decltype(std::chrono::high_resolution_clock::now()) start_time;
 
+        std::mutex log_lock;
+
         template <typename PRNG>
         SharedData(const float alpha_,
                    float* const syn0_,
@@ -213,8 +215,11 @@ uint32_t ModelTrainer::SampleFromUnigramDistribution() noexcept {
 void ModelTrainer::ReportAndUpdateAlpha() {
     shared_data_.processed_words_count += word_count_ - prev_word_count_;
     prev_word_count_ = word_count_;
-    Report(shared_data_.alpha, shared_data_.processed_words_count, text_words_count_,
-            p_.iterations_count, GetTimePassed(shared_data_), std::clog);
+    {
+        std::lock_guard<std::mutex> lock{shared_data_.log_lock};
+        Report(shared_data_.alpha, shared_data_.processed_words_count, text_words_count_,
+                p_.iterations_count, GetTimePassed(shared_data_), std::clog);
+    }
 
     auto new_alpha = static_cast<float>(
             p_.starting_alpha
