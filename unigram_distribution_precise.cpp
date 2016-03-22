@@ -119,8 +119,8 @@ yzw2v::sampling::UnigramDistribution::UnigramDistribution(const vocab::Vocabular
     : size_{vocab.size() - 1}
     , table_holder_{new Entry[vocab.size() - 1]}  // ignore paragraph token
 {
-    const auto precise_table = GenerateTable(vocab);
     table_ = table_holder_.get();
+    const auto precise_table = GenerateTable(vocab);
     for (auto i = uint32_t{}; i < size_; ++i) {
         table_[i].prob = static_cast<float>(precise_table[i].prob);
         table_[i].alias = precise_table[i].alias;
