@@ -29,7 +29,7 @@ void yzw2v::train::WriteModelTXT(const std::string& path,
 }
 
 void yzw2v::train::WriteModelBinary(const std::string& path,
-                                   const vocab::Vocabulary& vocab, const Model& model) {
+                                    const vocab::Vocabulary& vocab, const Model& model) {
     assert(vocab.size() == model.vocabulary_size);
 
     std::ofstream out{path, std::ios::binary};
