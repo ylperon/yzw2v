@@ -23,11 +23,10 @@ yzw2v::sampling::UnigramDistribution::UnigramDistribution(const vocab::Vocabular
         return sum;
     }();
 
-    auto* const table = table_holder_.get();
     auto id = uint32_t{};
     auto d1 = std::pow(static_cast<double>(vocab.Count(id)), POWER) / train_words_pow;
     for (auto index = uint32_t{}; index < size_; ++index) {
-        table[index] = id;
+        table_[index] = id;
         if (static_cast<double>(index) / size_ > d1) {
             ++id;
             if (id >= vocab.size()) {
