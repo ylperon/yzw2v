@@ -59,17 +59,17 @@ static std::vector<PreciseEntry> GenerateTable(const yzw2v::vocab::Vocabulary& v
     constexpr auto POWER = 0.75;
     const auto sum = [&vocab, POWER]{
         auto res = KahanAccumulator<double>{};
-        for (auto i = uint32_t{1}; i < vocab.size(); ++i) {
+        for (auto i = uint32_t{0}; i < vocab.size(); ++i) {
             res += vocab.Count(i);
         }
 
         return res.get();
     }();
 
-    const auto size = vocab.size() - 1;
+    const auto size = vocab.size();
     auto table = std::vector<PreciseEntry>(size);
-    for (auto i = uint32_t{1}; i < vocab.size() - 1; ++i) {
-        table[i - 1].prob = vocab.Count(i) / sum;
+    for (auto i = uint32_t{}; i < vocab.size(); ++i) {
+        table[i].prob = vocab.Count(i) / sum;
     }
 
     auto small = std::vector<uint32_t>{};
@@ -116,8 +116,8 @@ static std::vector<PreciseEntry> GenerateTable(const yzw2v::vocab::Vocabulary& v
 }
 
 yzw2v::sampling::UnigramDistribution::UnigramDistribution(const vocab::Vocabulary& vocab)
-    : size_{vocab.size() - 1}
-    , table_holder_{new Entry[vocab.size() - 1]}  // ignore paragraph token
+    : size_{vocab.size()}
+    , table_holder_{new Entry[vocab.size()]}  // ignore paragraph token
 {
     table_ = table_holder_.get();
     const auto precise_table = GenerateTable(vocab);
@@ -131,8 +131,16 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
     const auto index = static_cast<uint32_t>(size_ * prng.real_0_inc_1_exc());
     const auto prob = static_cast<float>(prng.real_0_inc_1_inc());
     if (prob < table_[index].prob) {
-        return index + 1;
+        if (index) {
+            return index;
+        }
+
+        return (prng() % (size_ - 1)) + 1;
     }
 
-    return table_[index].alias + 1;
+    if (table_[index].alias) {
+        return table_[index].alias;
+    }
+
+    return (prng() % (size_ - 1)) + 1;
 }
