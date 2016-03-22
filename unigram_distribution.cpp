@@ -60,7 +60,7 @@ static std::vector<PreciseEntry> GenerateTable(const yzw2v::vocab::Vocabulary& v
     const auto sum = [&vocab, POWER]{
         auto res = KahanAccumulator<double>{};
         for (auto i = uint32_t{1}; i < vocab.size(); ++i) {
-            res += std::pow(static_cast<double>(vocab.Count(i)), POWER);
+            res += vocab.Count(i);
         }
 
         return res.get();
@@ -69,7 +69,7 @@ static std::vector<PreciseEntry> GenerateTable(const yzw2v::vocab::Vocabulary& v
     const auto size = vocab.size() - 1;
     auto table = std::vector<PreciseEntry>(size);
     for (auto i = uint32_t{1}; i < vocab.size() - 1; ++i) {
-        table[i - 1].prob = std::pow(static_cast<double>(vocab.Count(i)), POWER) / sum;
+        table[i - 1].prob = vocab.Count(i) / sum;
     }
 
     auto small = std::vector<uint32_t>{};
