@@ -4,6 +4,7 @@
 
 #include "third_party/cxxopts/src/cxxopts.hpp"
 
+#include <chrono>
 #include <future>
 #include <iostream>
 #include <string>
@@ -169,8 +170,14 @@ static int Main(const Args& args) {
 
     const yzw2v::huff::HuffmanTree huffman_tree{vocab};
     const auto params = MakeParamsFromArgs(args);
+    const auto start_time = std::chrono::high_resolution_clock::now();
     const auto model = yzw2v::train::TrainCBOWModel(args.text_file, vocab, huffman_tree, params,
                                                     args.thread_count);
+    const auto stop_time = std::chrono::high_resolution_clock::now();
+    std::clog << "Training done in "
+              << std::chrono::duration_cast<std::chrono::seconds>(stop_time - start_time).count()
+              << " seconds"
+              << std::endl;
     WriteModelBinary(args.model_file, vocab, model);
 
     return EXIT_SUCCESS;
