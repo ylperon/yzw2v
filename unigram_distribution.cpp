@@ -1,41 +1,138 @@
 #include "unigram_distribution.h"
 
 #include "vocabulary.h"
+#include "prng.h"
 
+#include <vector>
 #include <cmath>
 
-uint32_t yzw2v::train::UnigramDistribution::size() const noexcept {
-    return table_size_;
-}
+namespace {
+    template <typename T>
+    class KahanAccumulator {
+    public:
+        using value_type = T;
 
-uint32_t yzw2v::train::UnigramDistribution::operator[](const uint32_t index) const noexcept {
-    return table_[index];
-}
-
-void yzw2v::train::UnigramDistribution::Init(const yzw2v::vocab::Vocabulary& vocab) noexcept {
-    const auto POWER = 0.75;
-    const auto train_words_pow = [&vocab, POWER]{
-        auto sum = double{};
-        for (auto id = uint32_t{}; id < vocab.size(); ++id) {
-            sum += std::pow(static_cast<double>(vocab.Count(id)), POWER);
+        explicit KahanAccumulator(const value_type value = {})
+            : sum_{value}
+            , compensation_{} {
         }
 
-        return sum;
+        template <typename Other>
+        KahanAccumulator& operator =(const Other value) {
+            sum_ = static_cast<value_type>(value);
+            compensation_ = {};
+            return *this;
+        }
+
+        template <typename Other>
+        KahanAccumulator& operator+= (const Other value) {
+            const value_type xxx = static_cast<value_type>(value) - compensation_;
+            const value_type yyy = sum_ + xxx;
+            compensation_ = (yyy - sum_) - xxx;
+            sum_ = yyy;
+            return *this;
+        }
+
+        value_type get() const {
+            return sum_ + compensation_;
+        }
+
+        template <typename Other>
+        operator Other() const {
+            return get();
+        }
+
+    private:
+        value_type sum_;
+        value_type compensation_;
+    };
+}
+
+namespace {
+    struct PreciseEntry {
+        double prob;
+        uint32_t alias;
+    };
+}
+
+static std::vector<PreciseEntry> GenerateTable(const yzw2v::vocab::Vocabulary& vocab) {
+    constexpr auto POWER = 0.75;
+    const auto sum = [&vocab, POWER]{
+        auto res = KahanAccumulator<double>{};
+        for (auto i = uint32_t{1}; i < vocab.size(); ++i) {
+            res += std::pow(static_cast<double>(vocab.Count(i)), POWER);
+        }
+
+        return res.get();
     }();
 
-    auto* const table = table_holder_.get();
-    auto id = uint32_t{};
-    auto d1 = std::pow(static_cast<double>(vocab.Count(id)), POWER) / train_words_pow;
-    for (auto index = uint32_t{}; index < table_size_; ++index) {
-        table[index] = id;
-        if (static_cast<double>(index) / table_size_ > d1) {
-            ++id;
-            if (id >= vocab.size()) {
-                id = vocab.size() - 1;
-            }
+    const auto size = vocab.size() - 1;
+    auto table = std::vector<PreciseEntry>(size);
+    for (auto i = uint32_t{1}; i < vocab.size() - 1; ++i) {
+        table[i - 1].prob = std::pow(static_cast<double>(vocab.Count(i)), POWER) / sum;
+    }
 
-            d1 += std::pow(static_cast<double>(vocab.Count(id)), POWER) / train_words_pow;
+    auto small = std::vector<uint32_t>{};
+    small.reserve(size);
+    auto large = std::vector<uint32_t>{};
+    large.reserve(size);
+    for (auto i = uint32_t{0}; i < size; ++i) {
+        const auto value = table[i].prob * size;
+        if (value < 1.0) {
+            small.push_back(i);
+        } else {
+            large.push_back(i);
         }
+    }
+
+    while (!small.empty() && !large.empty()) {
+        const auto small_index = small.back();
+        const auto large_index = large.back();
+        small.pop_back();
+        large.pop_back();
+        table[small_index].alias = large_index;
+        const auto large_prob_updated = (table[small_index].prob + table[large_index].prob) - 1.0;
+        table[large_index].prob = large_prob_updated;
+        if (large_prob_updated < 1.0) {
+            small.push_back(large_index);
+        } else {
+            large.push_back(small_index);
+        }
+    }
+
+    while (!large.empty()) {
+        const auto index = large.back();
+        large.pop_back();
+        table[index].prob = 1.0;
+    }
+
+    while (!small.empty()) {
+        const auto index = small.back();
+        small.pop_back();
+        table[index].prob = 1.0;
+    }
+
+    return table;
+}
+
+yzw2v::sampling::UnigramDistribution::UnigramDistribution(const vocab::Vocabulary& vocab)
+    : size_{vocab.size() - 1}
+    , table_holder_{new Entry[vocab.size() - 1]}  // ignore paragraph token
+{
+    const auto precise_table = GenerateTable(vocab);
+    table_ = table_holder_.get();
+    for (auto i = uint32_t{}; i < size_; ++i) {
+        table_[i].prob = static_cast<float>(precise_table[i].prob);
+        table_[i].alias = precise_table[i].alias;
     }
 }
 
+uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noexcept {
+    const auto index = static_cast<uint32_t>(size_ * prng.real_0_inc_1_exc());
+    const auto prob = static_cast<float>(prng.real_0_inc_1_inc());
+    if (prob < table_[index].prob) {
+        return index + 1;
+    }
+
+    return table_[index].alias + 1;
+}

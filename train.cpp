@@ -4,6 +4,7 @@
 #include "io.h"
 #include "mem.h"
 #include "numeric.h"
+#include "prng.h"
 #include "token_reader.h"
 #include "unigram_distribution.h"
 #include "vocabulary.h"
@@ -25,43 +26,10 @@ static constexpr uint64_t PER_THREAD_WORD_COUNT_TO_UPDATE_PARAMS = 10000;
 static constexpr size_t EXP_TABLE_SIZE = 1000;
 static constexpr uint32_t MAX_EXP = 6;
 static constexpr float MAX_EXP_FLT = static_cast<float>(MAX_EXP);
-static constexpr uint32_t UNIGRAM_TABLE_SIZE = 100000000;
 
 namespace {
-    class PRNG {
-    public:
-        using result_type = uint64_t;
-
-        explicit PRNG(const uint64_t state)
-            : state_{state}
-        {
-        }
-
-        uint64_t operator()() noexcept {
-            state_ = state_ * uint64_t{25214903917} + uint64_t{11};
-            return state_;
-        }
-
-        static constexpr uint64_t min() noexcept {
-            return 0;
-        }
-
-        static constexpr uint64_t max() noexcept {
-            return std::numeric_limits<uint64_t>::max();
-        }
-
-        void discard(uint64_t n) noexcept {
-            for (; n; --n) {
-                operator()();
-            }
-        }
-
-    private:
-        uint64_t state_;
-    };
-
     struct SharedData {
-        const yzw2v::train::UnigramDistribution unigram_distribution;
+        const yzw2v::sampling::UnigramDistribution unigram_distribution;
 
         const float* const exp_table;
         float* const syn0; // vocabulary_size * vector_size
@@ -72,16 +40,13 @@ namespace {
         float alpha;
         decltype(std::chrono::high_resolution_clock::now()) start_time;
 
-        template <typename PRNG>
         SharedData(const float alpha_,
                    float* const syn0_,
                    float* const syn1hs_,
                    float* const syn1neg_,
                    const float* const exp_table_,
-                   const uint32_t unigram_table_size,
-                   const yzw2v::vocab::Vocabulary& vocab,
-                   PRNG&& prng)
-            : unigram_distribution{unigram_table_size, vocab, prng}
+                   const yzw2v::vocab::Vocabulary& vocab)
+            : unigram_distribution{vocab}
             , exp_table{exp_table_}
             , syn0{syn0_}
             , syn1hs{syn1hs_}
@@ -134,9 +99,6 @@ namespace {
             , vocab_{vocab}
             , huff_{huffman_tree}
             , prng_{seed}
-            , uniform_window_{0, params.window_size}
-            , unigram_distribution_start_{static_cast<uint32_t>(prng_() % shared_data_.unigram_distribution.size())}
-            , unigram_distribution_cur_index_{(unigram_distribution_start_ + 1) % shared_data_.unigram_distribution.size()}
             , sentence_position_{0}
             , prev_word_count_{0}
             , word_count_{0}
@@ -160,8 +122,6 @@ namespace {
         uint32_t WindowBegin(const uint32_t window_indent) const noexcept;
         uint32_t WindowEnd(const uint32_t window_indent) const noexcept;
 
-        uint32_t SampleFromUnigramDistribution() noexcept;
-
     private:
         const yzw2v::train::Params p_;
         const std::unique_ptr<float, yzw2v::mem::detail::Deleter> neu1_holder_;
@@ -174,12 +134,7 @@ namespace {
         const yzw2v::vocab::Vocabulary& vocab_;
         const yzw2v::huff::HuffmanTree& huff_;
 
-        PRNG prng_;
-        std::uniform_int_distribution<uint32_t> uniform_window_;
-        std::uniform_real_distribution<float> uniform01_;
-
-        uint32_t unigram_distribution_start_;
-        uint32_t unigram_distribution_cur_index_;
+        yzw2v::sampling::PRNG prng_;
 
         std::vector<uint32_t> sentence_;
         uint32_t sentence_position_;
@@ -205,7 +160,7 @@ void ModelTrainer::TrainCBOW() {
         }
 
         for (sentence_position_ = 0; sentence_position_ < sentence_.size(); ++sentence_position_) {
-            const auto window_indent = uniform_window_(prng_);
+            const auto window_indent = static_cast<uint32_t>(prng_() % p_.window_size);
             const auto window_begin = WindowBegin(window_indent);
             const auto window_end = WindowEnd(window_indent);
 
@@ -224,20 +179,6 @@ void ModelTrainer::TrainCBOW() {
             CBOWPropagateHiddenToInput(window_begin, window_end);
         }
     }
-}
-
-uint32_t ModelTrainer::SampleFromUnigramDistribution() noexcept {
-    if (YZ_UNLIKELY(unigram_distribution_cur_index_ == shared_data_.unigram_distribution.size())) {
-        unigram_distribution_cur_index_ = 0;
-    }
-
-    if (YZ_UNLIKELY(unigram_distribution_cur_index_ == unigram_distribution_start_)) {
-        unigram_distribution_start_ = prng_() % shared_data_.unigram_distribution.size();
-        unigram_distribution_cur_index_ = (unigram_distribution_start_ + 1)
-                                          % shared_data_.unigram_distribution.size();
-    }
-
-    return shared_data_.unigram_distribution[unigram_distribution_cur_index_++];
 }
 
 void ModelTrainer::ReportAndUpdateAlpha() {
@@ -283,7 +224,7 @@ void ModelTrainer::ReadSentence() {
                 (std::sqrt(count / (p_.min_token_freq_threshold * text_words_count_)) + 1.f)
                 * (p_.min_token_freq_threshold * text_words_count_)
                 / count;
-            if (prob < uniform01_(prng_)) {
+            if (prob < prng_.real_0_inc_1_inc()) {
                 continue;
             }
         }
@@ -354,11 +295,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             target = cur_token;
             label = 1;
         } else {
-            target = SampleFromUnigramDistribution();
-            if (yzw2v::vocab::PARAGRAPH_TOKEN_ID == target) {
-                target = prng_() % (vocab_.size() - 1) + 1;
-            }
-
+            target = shared_data_.unigram_distribution(prng_);
             if (cur_token == target) {
                 continue;
             }
@@ -416,13 +353,14 @@ uint32_t ModelTrainer::WindowEnd(const uint32_t window_indent) const noexcept {
     return sentence_position_ + p_.window_size - window_indent + 1;
 }
 
-template <typename PRNG>
 static void InitializeMatrix(const uint32_t row_count, const uint32_t column_count,
-                             float* const matrix, PRNG&& prng) {
-    std::uniform_real_distribution<float> uniform01{-0.5f, 0.5f};
+                             float* const matrix, yzw2v::sampling::PRNG& prng) {
     for (auto row = uint32_t{}; row < row_count; ++row) {
         for (auto column = uint32_t{}; column < column_count; ++column) {
-            matrix[row * column_count + column] = uniform01(prng) / column_count;
+            matrix[row * column_count + column] = static_cast<float>(
+                                                      (prng.real_0_inc_1_inc() - 0.5)
+                                                      / column_count
+                                                  );
         }
     }
 }
@@ -465,7 +403,7 @@ yzw2v::train::Model yzw2v::train::TrainCBOWModel(const std::string& path,
     const auto exp_table_holder = std::unique_ptr<const float[]>(GenerateExpTable(EXP_TABLE_SIZE));
 
     auto res = Model{vocab.size(), params.vector_size, mem::AllocateFloatForSIMD(matrix_size)};
-    PRNG prng{params.prng_seed};
+    yzw2v::sampling::PRNG prng{params.prng_seed};
     InitializeMatrix(vocab.size(), params.vector_size, res.matrix_holder.get(), prng);
 
     const auto file_size = io::FileSize(path);
@@ -473,7 +411,7 @@ yzw2v::train::Model yzw2v::train::TrainCBOWModel(const std::string& path,
     const auto bytes_per_thread_remainder = file_size % thread_count;
     SharedData shared_data{params.starting_alpha,
                            res.matrix_holder.get(), syn1hs_holder.get(), syn1neg_holder.get(),
-                           exp_table_holder.get(), UNIGRAM_TABLE_SIZE, vocab, prng};
+                           exp_table_holder.get(), vocab};
     auto jobs = std::vector<std::future<void>>{};
     auto job_index = uint32_t{};
     for (auto offset = uint64_t{}; offset < file_size; offset += bytes_per_thread, ++job_index) {
