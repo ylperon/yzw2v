@@ -2,6 +2,7 @@
 
 #include "huffman.h"
 #include "io.h"
+#include "matrix.h"
 #include "mem.h"
 #include "numeric.h"
 #include "prng.h"
@@ -32,18 +33,18 @@ namespace {
         const yzw2v::sampling::UnigramDistribution unigram_distribution;
 
         const float* const exp_table;
-        float* const syn0; // vocabulary_size * vector_size
-        float* const syn1hs; // vocabulary_size * vector_size
-        float* const syn1neg; // vocabulary_size * vector_size
+        yzw2v::num::Matrix* const syn0;
+        yzw2v::num::Matrix* const syn1hs;
+        yzw2v::num::Matrix* const syn1neg;
 
         uint64_t processed_words_count;
         float alpha;
         decltype(std::chrono::high_resolution_clock::now()) start_time;
 
         SharedData(const float alpha_,
-                   float* const syn0_,
-                   float* const syn1hs_,
-                   float* const syn1neg_,
+                   yzw2v::num::Matrix* const syn0_,
+                   yzw2v::num::Matrix* const syn1hs_,
+                   yzw2v::num::Matrix* const syn1neg_,
                    const float* const exp_table_,
                    const yzw2v::vocab::Vocabulary& vocab)
             : unigram_distribution{vocab}
@@ -258,8 +259,7 @@ void ModelTrainer::CBOWPropagateInputToHidden(const uint32_t window_begin,
             continue;
         }
 
-        const auto shift = p_.vector_size * sentence_[index];
-        yzw2v::num::AddVector(neu1_, p_.vector_size, shared_data_.syn0 + shift);
+        yzw2v::num::AddVector(neu1_, p_.vector_size, shared_data_.syn0->row(sentence_[index]));
     }
 
     yzw2v::num::MultiplyVector(neu1_, p_.vector_size, 1.0f / (window_end - window_begin));
@@ -268,8 +268,9 @@ void ModelTrainer::CBOWPropagateInputToHidden(const uint32_t window_begin,
 void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
     const auto token = huff_.Tokens()[sentence_[sentence_position_]];
     for (auto index = uint32_t{}; index < token.length; ++index) {
-        const auto shift = token.point[index] * p_.vector_size;
-        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, shared_data_.syn1hs + shift);
+        const auto other_token = token.point[index];
+        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size,
+                                           shared_data_.syn1hs->row(other_token));
 
         if (f <= -MAX_EXP_FLT || f >= MAX_EXP_FLT) {
             continue;
@@ -281,8 +282,8 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
         }
 
         const auto g = (1.0f - token.code[index] - f) * shared_data_.alpha;
-        yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1hs + shift, g);
-        yzw2v::num::AddVector(shared_data_.syn1hs + shift, p_.vector_size, neu1e_, g);
+        yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1hs->row(other_token), g);
+        yzw2v::num::AddVector(shared_data_.syn1hs->row(other_token), p_.vector_size, neu1e_, g);
     }
 }
 
@@ -303,8 +304,8 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             label = 0;
         }
 
-        const auto shift = target * p_.vector_size;
-        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, shared_data_.syn1neg + shift);
+        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size,
+                                           shared_data_.syn1neg->row(target));
 
         auto g = float{};
         if (f > MAX_EXP_FLT) {
@@ -318,8 +319,8 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
-        yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1neg + shift, g);
-        yzw2v::num::AddVector(shared_data_.syn1neg + shift, p_.vector_size, neu1_, g);
+        yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1neg->row(target), g);
+        yzw2v::num::AddVector(shared_data_.syn1neg->row(target), p_.vector_size, neu1_, g);
     }
 }
 
@@ -332,8 +333,7 @@ void ModelTrainer::CBOWPropagateHiddenToInput(const uint32_t window_begin,
             continue;
         }
 
-        const auto shift = sentence_[index] * p_.vector_size;
-        yzw2v::num::AddVector(shared_data_.syn0 + shift, p_.vector_size, neu1e_);
+        yzw2v::num::AddVector(shared_data_.syn0->row(sentence_[index]), p_.vector_size, neu1e_);
     }
 }
 
@@ -353,14 +353,11 @@ uint32_t ModelTrainer::WindowEnd(const uint32_t window_indent) const noexcept {
     return sentence_position_ + p_.window_size - window_indent + 1;
 }
 
-static void InitializeMatrix(const uint32_t row_count, const uint32_t column_count,
-                             float* const matrix, yzw2v::sampling::PRNG& prng) {
-    for (auto row = uint32_t{}; row < row_count; ++row) {
-        for (auto column = uint32_t{}; column < column_count; ++column) {
-            matrix[row * column_count + column] = static_cast<float>(
-                                                      (prng.real_0_inc_1_inc() - 0.5)
-                                                      / column_count
-                                                  );
+static void InitializeMatrix(yzw2v::num::Matrix& matrix, yzw2v::sampling::PRNG& prng) {
+    for (auto i = uint32_t{}; i < matrix.rows_count(); ++i) {
+        auto* const row = matrix.row(i);
+        for (auto j = uint32_t{}; j < matrix.columns_count(); ++j) {
+            row[j] = static_cast<float>((prng.real_0_inc_1_inc() - 0.5) / matrix.columns_count());
         }
     }
 }
@@ -376,25 +373,30 @@ static std::unique_ptr<float[]> GenerateExpTable(const uint32_t size) {
     return res;
 }
 
+static void Zeroize(yzw2v::num::Matrix& matrix) noexcept {
+    for (uint32_t i = uint32_t{}; i < matrix.rows_count(); ++i) {
+        yzw2v::num::Zeroize(matrix.row(i), matrix.columns_count());
+    }
+}
+
 yzw2v::train::Model yzw2v::train::TrainCBOWModel(const std::string& path,
                                                  const vocab::Vocabulary& vocab,
                                                  const huff::HuffmanTree& huffman_tree,
                                                  const Params& params,
                                                  const uint32_t thread_count) {
-    const auto matrix_size = vocab.size() * params.vector_size;
-    const auto syn1hs_holder = [&params, matrix_size]() -> std::unique_ptr<float, yzw2v::mem::detail::Deleter> {
+    const auto syn1hs_holder = [&params, &vocab]() -> std::unique_ptr<num::Matrix> {
         if (params.use_hierarchical_softmax) {
-            auto res = mem::AllocateFloatForSIMD(matrix_size);
-            yzw2v::num::Zeroize(res.get(), matrix_size);
+            std::unique_ptr<num::Matrix> res{new num::Matrix{vocab.size(), params.vector_size}};
+            Zeroize(*res);
             return res;
         }
 
         return nullptr;
     }();
-    const auto syn1neg_holder = [&params, matrix_size]() -> std::unique_ptr<float, yzw2v::mem::detail::Deleter> {
+    const auto syn1neg_holder = [&params, &vocab]() -> std::unique_ptr<num::Matrix> {
         if (params.negative_samples_count > 0) {
-            auto res = mem::AllocateFloatForSIMD(matrix_size);
-            yzw2v::num::Zeroize(res.get(), matrix_size);
+            std::unique_ptr<num::Matrix> res{new num::Matrix{vocab.size(), params.vector_size}};
+            Zeroize(*res);
             return res;
         }
 
@@ -402,9 +404,12 @@ yzw2v::train::Model yzw2v::train::TrainCBOWModel(const std::string& path,
     }();
     const auto exp_table_holder = std::unique_ptr<const float[]>(GenerateExpTable(EXP_TABLE_SIZE));
 
-    auto res = Model{vocab.size(), params.vector_size, mem::AllocateFloatForSIMD(matrix_size)};
+    auto res = Model{
+        vocab.size(), params.vector_size,
+        std::unique_ptr<num::Matrix>{new num::Matrix{vocab.size(), params.vector_size}}
+    };
     yzw2v::sampling::PRNG prng{params.prng_seed};
-    InitializeMatrix(vocab.size(), params.vector_size, res.matrix_holder.get(), prng);
+    InitializeMatrix(*res.matrix_holder, prng);
 
     const auto file_size = io::FileSize(path);
     const auto bytes_per_thread = file_size / thread_count;

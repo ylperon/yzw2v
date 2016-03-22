@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mem.h"
+#include "matrix.h"
 
 #include <memory>
 #include <string>
@@ -44,7 +45,7 @@ namespace yzw2v {
         struct Model {
             uint32_t vocabulary_size;
             uint32_t vector_size;
-            std::unique_ptr<float, yzw2v::mem::detail::Deleter> matrix_holder;
+            std::unique_ptr<num::Matrix> matrix_holder;
         };
 
         void WriteModelTXT(const std::string& path,

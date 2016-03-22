@@ -20,7 +20,7 @@ void yzw2v::train::WriteModelTXT(const std::string& path,
     out << model.vocabulary_size << ' ' << model.vector_size << '\n';
     for (auto i = uint32_t{}; i < model.vocabulary_size; ++i) {
         out << vocab.Token(i).token;
-        const auto* const row = matrix + i * model.vector_size;
+        const auto* const row = matrix->row(i);
         for (auto j = uint32_t{}; j < model.vector_size; ++j) {
             out << ' ' << row[j];
         }
@@ -42,7 +42,7 @@ void yzw2v::train::WriteModelBinary(const std::string& path,
     out << model.vocabulary_size << ' ' << model.vector_size << '\n';
     for (auto i = uint32_t{}; i < model.vocabulary_size; ++i) {
         out << vocab.Token(i).token << ' ';
-        const auto* const row = matrix + i * model.vector_size;
+        const auto* const row = matrix->row(i);
         for (auto j = uint32_t{}; j < model.vector_size; ++j) {
             out.write(reinterpret_cast<const char*>(row + j), sizeof(*(row + j)));
         }
