@@ -1,4 +1,4 @@
-#include "unigram_distribution.h"
+#include "unigram_distribution_precise.h"
 
 #include "vocabulary.h"
 #include "prng.h"
