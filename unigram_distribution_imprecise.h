@@ -22,6 +22,7 @@ namespace yzw2v {
         private:
             uint32_t size_;
             uint32_t* table_;
+            uint32_t vocab_size_;
             std::unique_ptr<uint32_t[]> table_holder_;
         };
     }  // namespace sampling
