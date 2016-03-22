@@ -9,6 +9,7 @@ static constexpr uint32_t UNIGRAM_TABLE_SIZE = 100000000;
 
 yzw2v::sampling::UnigramDistribution::UnigramDistribution(const vocab::Vocabulary& vocab)
     : size_{UNIGRAM_TABLE_SIZE}
+    , vocab_size_{vocab.size()}
     , table_holder_{new uint32_t[UNIGRAM_TABLE_SIZE]}
 {
     table_ = table_holder_.get();
@@ -44,5 +45,5 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
         return val;
     }
 
-    return (prn % (size_ - 1)) + 1;
+    return (prn % (vocab_size_ - 1)) + 1;
 }
