@@ -299,7 +299,6 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
         } else {
             target = shared_data_.unigram_distribution(prng_);
             shared_data_.unigram_distribution.prefetch(prng_);
-            shared_data_.unigram_distribution.prefetch(prng_, 2);
             if (cur_token == target) {
                 continue;
             }
