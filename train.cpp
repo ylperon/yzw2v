@@ -260,14 +260,6 @@ void ModelTrainer::CBOWPropagateInputToHidden(const uint32_t window_begin,
             continue;
         }
 
-        if (index + 1 < window_end) {
-            const auto* const ptr = shared_data_.syn0->row(sentence_[index + 1]);
-            YZ_PREFETCH_READ(ptr, 3);
-            YZ_PREFETCH_READ(ptr + 4, 3);
-            YZ_PREFETCH_READ(ptr + 8, 3);
-            YZ_PREFETCH_READ(ptr + 12, 3);
-        }
-
         yzw2v::num::AddVector(neu1_, p_.vector_size, shared_data_.syn0->row(sentence_[index]));
     }
 
@@ -315,7 +307,6 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             label = 0;
         }
 
-        YZ_PREFETCH_READ(neu1e_, 3); // prefetch `neu1e_` for `AddVector`
         auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size,
                                            shared_data_.syn1neg->row(target));
 
@@ -331,7 +322,6 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
-        YZ_PREFETCH_READ(neu1_, 3); // prefetch `neu1_` for `AddVector`
         yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1neg->row(target), g);
         yzw2v::num::AddVector(shared_data_.syn1neg->row(target), p_.vector_size, neu1_, g);
     }
@@ -344,14 +334,6 @@ void ModelTrainer::CBOWPropagateHiddenToInput(const uint32_t window_begin,
     for (auto index = window_begin; index < window_end; ++index) {
         if (sentence_position_ == index) {
             continue;
-        }
-
-        if (index + 1 < window_end) {
-            const auto* const ptr = shared_data_.syn0->row(sentence_[index + 1]);
-            YZ_PREFETCH_READ(ptr, 3);
-            YZ_PREFETCH_READ(ptr + 4, 3);
-            YZ_PREFETCH_READ(ptr + 8, 3);
-            YZ_PREFETCH_READ(ptr + 12, 3);
         }
 
         yzw2v::num::AddVector(shared_data_.syn0->row(sentence_[index]), p_.vector_size, neu1e_);
