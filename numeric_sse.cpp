@@ -25,14 +25,14 @@ static void Prefetch8(float* const v) noexcept {
 }
 
 static void Fill8(float* const v, const __m128 wide_value) noexcept {
-    _mm_stream_ps(v, wide_value);
-    _mm_stream_ps(v + 4, wide_value);
-    _mm_stream_ps(v + 8, wide_value);
-    _mm_stream_ps(v + 12, wide_value);
-    _mm_stream_ps(v + 16, wide_value);
-    _mm_stream_ps(v + 20, wide_value);
-    _mm_stream_ps(v + 24, wide_value);
-    _mm_stream_ps(v + 28, wide_value);
+    _mm_store_ps(v, wide_value);
+    _mm_store_ps(v + 4, wide_value);
+    _mm_store_ps(v + 8, wide_value);
+    _mm_store_ps(v + 12, wide_value);
+    _mm_store_ps(v + 16, wide_value);
+    _mm_store_ps(v + 20, wide_value);
+    _mm_store_ps(v + 24, wide_value);
+    _mm_store_ps(v + 28, wide_value);
 }
 
 static void DivideVector8(float* const v, const __m128 wide_divisor) noexcept {
@@ -54,14 +54,14 @@ static void DivideVector8(float* const v, const __m128 wide_divisor) noexcept {
     v6 = _mm_div_ps(v6, wide_divisor);
     v7 = _mm_div_ps(v7, wide_divisor);
 
-    _mm_stream_ps(v, v0);
-    _mm_stream_ps(v + 4, v1);
-    _mm_stream_ps(v + 8, v2);
-    _mm_stream_ps(v + 12, v3);
-    _mm_stream_ps(v + 16, v4);
-    _mm_stream_ps(v + 20, v5);
-    _mm_stream_ps(v + 24, v6);
-    _mm_stream_ps(v + 28, v7);
+    _mm_store_ps(v, v0);
+    _mm_store_ps(v + 4, v1);
+    _mm_store_ps(v + 8, v2);
+    _mm_store_ps(v + 12, v3);
+    _mm_store_ps(v + 16, v4);
+    _mm_store_ps(v + 20, v5);
+    _mm_store_ps(v + 24, v6);
+    _mm_store_ps(v + 28, v7);
 }
 
 static void MultiplyVector8(float* const v, const __m128 wide_divisor) noexcept {
@@ -83,14 +83,14 @@ static void MultiplyVector8(float* const v, const __m128 wide_divisor) noexcept 
     v6 = _mm_mul_ps(v6, wide_divisor);
     v7 = _mm_mul_ps(v7, wide_divisor);
 
-    _mm_stream_ps(v, v0);
-    _mm_stream_ps(v + 4, v1);
-    _mm_stream_ps(v + 8, v2);
-    _mm_stream_ps(v + 12, v3);
-    _mm_stream_ps(v + 16, v4);
-    _mm_stream_ps(v + 20, v5);
-    _mm_stream_ps(v + 24, v6);
-    _mm_stream_ps(v + 28, v7);
+    _mm_store_ps(v, v0);
+    _mm_store_ps(v + 4, v1);
+    _mm_store_ps(v + 8, v2);
+    _mm_store_ps(v + 12, v3);
+    _mm_store_ps(v + 16, v4);
+    _mm_store_ps(v + 20, v5);
+    _mm_store_ps(v + 24, v6);
+    _mm_store_ps(v + 28, v7);
 }
 
 static void AddVector8(float* const v, const float* const u) noexcept {
@@ -121,14 +121,14 @@ static void AddVector8(float* const v, const float* const u) noexcept {
     v6 = _mm_mul_ps(v6, u6);
     v7 = _mm_mul_ps(v7, u7);
 
-    _mm_stream_ps(v, v0);
-    _mm_stream_ps(v + 4, v1);
-    _mm_stream_ps(v + 8, v2);
-    _mm_stream_ps(v + 12, v3);
-    _mm_stream_ps(v + 16, v4);
-    _mm_stream_ps(v + 20, v5);
-    _mm_stream_ps(v + 24, v6);
-    _mm_stream_ps(v + 28, v7);
+    _mm_store_ps(v, v0);
+    _mm_store_ps(v + 4, v1);
+    _mm_store_ps(v + 8, v2);
+    _mm_store_ps(v + 12, v3);
+    _mm_store_ps(v + 16, v4);
+    _mm_store_ps(v + 20, v5);
+    _mm_store_ps(v + 24, v6);
+    _mm_store_ps(v + 28, v7);
 }
 
 static void AddVector8(float* const v, const float* const u, const __m128 wide_multiple) noexcept {
@@ -168,14 +168,14 @@ static void AddVector8(float* const v, const float* const u, const __m128 wide_m
     v6 = _mm_mul_ps(v6, u6);
     v7 = _mm_mul_ps(v7, u7);
 
-    _mm_stream_ps(v, v0);
-    _mm_stream_ps(v + 4, v1);
-    _mm_stream_ps(v + 8, v2);
-    _mm_stream_ps(v + 12, v3);
-    _mm_stream_ps(v + 16, v4);
-    _mm_stream_ps(v + 20, v5);
-    _mm_stream_ps(v + 24, v6);
-    _mm_stream_ps(v + 28, v7);
+    _mm_store_ps(v, v0);
+    _mm_store_ps(v + 4, v1);
+    _mm_store_ps(v + 8, v2);
+    _mm_store_ps(v + 12, v3);
+    _mm_store_ps(v + 16, v4);
+    _mm_store_ps(v + 20, v5);
+    _mm_store_ps(v + 24, v6);
+    _mm_store_ps(v + 28, v7);
 }
 
 static __m128 ScalarProduct8(const float* const v, const float* const u) noexcept {
@@ -227,7 +227,7 @@ void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexce
 
     for (const auto* const v_this_end = v_end - 3; v < v_this_end; v += 4) {
         _mm_prefetch(v + 4, _MM_HINT_T0);
-        _mm_stream_ps(v, wide_value);
+        _mm_store_ps(v, wide_value);
     }
 
     for (; v < v_end;) {
@@ -249,7 +249,7 @@ void yzw2v::num::DivideVector(float* v, const uint32_t v_size, const float divis
 
     for (const auto* const v_this_end = v_end - 3; v < v_this_end; v += 4) {
         _mm_prefetch(v + 4, _MM_HINT_T0);
-        _mm_stream_ps(v, _mm_div_ps(_mm_load_ps(v), wide_divisor));
+        _mm_store_ps(v, _mm_div_ps(_mm_load_ps(v), wide_divisor));
     }
 
     for (; v < v_end;) {
@@ -268,7 +268,7 @@ void yzw2v::num::MultiplyVector(float* v, const uint32_t v_size, const float mul
 
     for (const auto* const v_this_end = v_end - 3; v < v_this_end; v += 4) {
         _mm_prefetch(v + 4, _MM_HINT_T0);
-        _mm_stream_ps(v, _mm_mul_ps(_mm_load_ps(v), wide_multiple));
+        _mm_store_ps(v, _mm_mul_ps(_mm_load_ps(v), wide_multiple));
     }
 
     for (; v < v_end; ++v) {
@@ -286,7 +286,7 @@ void yzw2v::num::AddVector(float* v, const uint32_t v_size, const float* summand
 
     for (const auto* const v_this_end = v_end - 3; v < v_this_end; summand += 4, v += 4) {
         _mm_prefetch(v + 4, _MM_HINT_T0);
-        _mm_stream_ps(v, _mm_add_ps(_mm_load_ps(v), _mm_load_ps(summand)));
+        _mm_store_ps(v, _mm_add_ps(_mm_load_ps(v), _mm_load_ps(summand)));
     }
 
     for (; v < v_end;) {
@@ -307,7 +307,7 @@ void yzw2v::num::AddVector(float* v, const uint32_t v_size,
     for (const auto* const v_this_end = v_end - 3; v < v_this_end; summand += 4, v += 4) {
         _mm_prefetch(v + 4, _MM_HINT_T0);
         _mm_prefetch(summand + 4, _MM_HINT_T0);
-        _mm_stream_ps(v, _mm_add_ps(_mm_load_ps(v),
+        _mm_store_ps(v, _mm_add_ps(_mm_load_ps(v),
                                    _mm_mul_ps(wide_summand_multiple,
                                               _mm_load_ps(summand)
                                               )
