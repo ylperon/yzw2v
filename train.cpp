@@ -299,6 +299,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
         } else {
             target = shared_data_.unigram_distribution(prng_);
             YZ_PREFETCH_READ(shared_data_.unigram_distribution.next_ptr(prng_), 3);
+            YZ_PREFETCH_READ(shared_data_.unigram_distribution.next_ptr(prng_, 2), 3);
             if (cur_token == target) {
                 continue;
             }
