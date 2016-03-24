@@ -307,7 +307,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             label = 0;
         }
 
-        YZ_PREFETCH_READ(neu1e_, 3);
+        YZ_PREFETCH_READ(neu1e_, 3); // prefetch `neu1e_` for `AddVector`
         auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size,
                                            shared_data_.syn1neg->row(target));
 
@@ -323,7 +323,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
-        YZ_PREFETCH_READ(neu1_, 3);
+        YZ_PREFETCH_READ(neu1_, 3); // prefetch `neu1_` for `AddVector`
         yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1neg->row(target), g);
         yzw2v::num::AddVector(shared_data_.syn1neg->row(target), p_.vector_size, neu1_, g);
     }
