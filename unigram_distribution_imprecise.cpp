@@ -1,6 +1,5 @@
 #include "unigram_distribution_imprecise.h"
 
-#include "likely.h"
 #include "prefetch.h"
 #include "prng.h"
 #include "vocabulary.h"

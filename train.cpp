@@ -311,9 +311,9 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
 
         auto g = float{};
         if (f > MAX_EXP_FLT) {
-            g = (label - 1) * shared_data_.alpha;
+            g = (label - 1.0f) * shared_data_.alpha;
         } else if (f < -MAX_EXP_FLT) {
-            g = (label - 0) * shared_data_.alpha;
+            g = (label - 0.0f) * shared_data_.alpha;
         } else {
             const auto exp_index = static_cast<uint32_t>(
                     (f + MAX_EXP_FLT) * (EXP_TABLE_SIZE / MAX_EXP / 2)
