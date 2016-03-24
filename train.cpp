@@ -261,7 +261,11 @@ void ModelTrainer::CBOWPropagateInputToHidden(const uint32_t window_begin,
         }
 
         if (index + 1 < window_end) {
-            YZ_PREFETCH_READ(shared_data_.syn0->row(sentence_[index + 1]), 3);
+            const auto* const ptr = shared_data_.syn0->row(sentence_[index + 1]);
+            YZ_PREFETCH_READ(ptr, 3);
+            YZ_PREFETCH_READ(ptr + 4, 3);
+            YZ_PREFETCH_READ(ptr + 8, 3);
+            YZ_PREFETCH_READ(ptr + 12, 3);
         }
 
         yzw2v::num::AddVector(neu1_, p_.vector_size, shared_data_.syn0->row(sentence_[index]));
@@ -343,7 +347,11 @@ void ModelTrainer::CBOWPropagateHiddenToInput(const uint32_t window_begin,
         }
 
         if (index + 1 < window_end) {
-            YZ_PREFETCH_READ(shared_data_.syn0->row(sentence_[index + 1]), 3);
+            const auto* const ptr = shared_data_.syn0->row(sentence_[index + 1]);
+            YZ_PREFETCH_READ(ptr, 3);
+            YZ_PREFETCH_READ(ptr + 4, 3);
+            YZ_PREFETCH_READ(ptr + 8, 3);
+            YZ_PREFETCH_READ(ptr + 12, 3);
         }
 
         yzw2v::num::AddVector(shared_data_.syn0->row(sentence_[index]), p_.vector_size, neu1e_);
