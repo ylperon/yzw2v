@@ -15,9 +15,12 @@ namespace yzw2v {
             {
             }
 
+            uint64_t next() noexcept {
+                return state_ * uint64_t{25214903917} + uint64_t{11};
+            }
+
             uint64_t operator()() noexcept {
-                state_ = state_ * uint64_t{25214903917} + uint64_t{11};
-                return state_;
+                return state_ = next();
             }
 
             double real_0_inc_1_inc() noexcept {
