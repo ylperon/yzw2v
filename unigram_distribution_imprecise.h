@@ -19,6 +19,8 @@ namespace yzw2v {
             explicit UnigramDistribution(const vocab::Vocabulary& vocab);
             uint32_t operator()(PRNG& prng) const noexcept;
 
+            const uint32_t* next_ptr(const PRNG& prng) const noexcept;
+
         private:
             uint32_t size_;
             uint32_t* table_;

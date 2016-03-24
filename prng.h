@@ -15,7 +15,7 @@ namespace yzw2v {
             {
             }
 
-            uint64_t next() noexcept {
+            uint64_t next() const noexcept {
                 return state_ * uint64_t{25214903917} + uint64_t{11};
             }
 

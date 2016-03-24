@@ -5,6 +5,7 @@
 #include "matrix.h"
 #include "mem.h"
 #include "numeric.h"
+#include "prefetch.h"
 #include "prng.h"
 #include "token_reader.h"
 #include "unigram_distribution.h"
@@ -297,6 +298,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             label = 1;
         } else {
             target = shared_data_.unigram_distribution(prng_);
+            YZ_PREFETCH_READ(shared_data_.unigram_distribution.next_ptr(prng_), 3);
             if (cur_token == target) {
                 continue;
             }

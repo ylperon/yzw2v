@@ -47,3 +47,7 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
 
     return (prn % (vocab_size_ - 1)) + 1;
 }
+
+const uint32_t* yzw2v::sampling::UnigramDistribution::next_ptr(const PRNG& prng) const noexcept {
+    return table_ + (prng.next() % size_);
+}
