@@ -43,7 +43,7 @@ yzw2v::sampling::UnigramDistribution::UnigramDistribution(const vocab::Vocabular
 
 uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noexcept {
     const auto prn = prng();
-    if (const auto val = table_[YZ_LIKELY(prn < size_) ? prn : (prn % size_)]) {
+    if (const auto val = table_[prn % size_]) {
         return val;
     }
 
@@ -51,11 +51,9 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
 }
 
 void yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng) const noexcept {
-    const auto prn = prng.next();
-    YZ_PREFETCH_READ(table_ + (YZ_LIKELY(prn < size_) ? prn : (prn % size_)), 3);
+    YZ_PREFETCH_READ(table_ + (prng.next() % size_), 3);
 }
 
 void yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng, const uint32_t steps) const noexcept {
-    const auto prn = prng.next(steps);
-    YZ_PREFETCH_READ(table_ + (YZ_LIKELY(prn < size_) ? prn : (prn % size_)), 3);
+    YZ_PREFETCH_READ(table_ + (prng.next(steps) % size_), 3);
 }
