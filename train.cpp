@@ -260,6 +260,10 @@ void ModelTrainer::CBOWPropagateInputToHidden(const uint32_t window_begin,
             continue;
         }
 
+        if (index + 1 < window_end) {
+            YZ_PREFETCH_READ(shared_data_.syn0->row(sentence_[index + 1]), 3);
+        }
+
         yzw2v::num::AddVector(neu1_, p_.vector_size, shared_data_.syn0->row(sentence_[index]));
     }
 
@@ -336,6 +340,10 @@ void ModelTrainer::CBOWPropagateHiddenToInput(const uint32_t window_begin,
     for (auto index = window_begin; index < window_end; ++index) {
         if (sentence_position_ == index) {
             continue;
+        }
+
+        if (index + 1 < window_end) {
+            YZ_PREFETCH_READ(shared_data_.syn0->row(sentence_[index + 1]), 3);
         }
 
         yzw2v::num::AddVector(shared_data_.syn0->row(sentence_[index]), p_.vector_size, neu1e_);
