@@ -20,6 +20,7 @@ namespace yzw2v {
             uint32_t operator()(PRNG& prng) const noexcept;
 
             const uint32_t* next_ptr(const PRNG& prng) const noexcept;
+            const uint32_t* next_ptr(const PRNG& prng, const uint32_t steps) const noexcept;
 
         private:
             uint32_t size_;

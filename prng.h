@@ -19,6 +19,15 @@ namespace yzw2v {
                 return state_ * uint64_t{25214903917} + uint64_t{11};
             }
 
+            uint64_t next(const uint32_t steps) const noexcept {
+                auto state = state_;
+                for (auto i = uint32_t{}; i < steps; ++i) {
+                    state = state * uint64_t{25214903917} + uint64_t{11};
+                }
+
+                return state;
+            }
+
             uint64_t operator()() noexcept {
                 return state_ = next();
             }
