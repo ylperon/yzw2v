@@ -137,14 +137,12 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
     return table_[index].alias + 1;
 }
 
-const uint32_t* yzw2v::sampling::UnigramDistribution::nexp_ptr(const PRNG& prng) const noexcept {
+void yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng) const noexcept {
     (void)prng;
-    return nullptr;
 }
 
-const uint32_t*
-yzw2v::sampling::UnigramDistribution::nexp_ptr(const PRNG& prng, const uint32_t steps) const noexcept {
+void
+yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng, const uint32_t steps) const noexcept {
     (void)prng;
     (void)steps;
-    return nullptr;
 }

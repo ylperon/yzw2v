@@ -1,6 +1,7 @@
 #include "unigram_distribution_imprecise.h"
 
 #include "likely.h"
+#include "prefetch.h"
 #include "prng.h"
 #include "vocabulary.h"
 
@@ -49,13 +50,12 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
     return (prn % (vocab_size_ - 1)) + 1;
 }
 
-const uint32_t* yzw2v::sampling::UnigramDistribution::next_ptr(const PRNG& prng) const noexcept {
+void yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng) const noexcept {
     const auto prn = prng.next();
-    return table_ + (YZ_LIKELY(prn < size_) ? prn : (prn % size_));
+    YZ_PREFETCH_READ(table_ + (YZ_LIKELY(prn < size_) ? prn : (prn % size_)), 3);
 }
 
-const uint32_t*
-yzw2v::sampling::UnigramDistribution::next_ptr(const PRNG& prng, const uint32_t steps) const noexcept {
+void yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng, const uint32_t steps) const noexcept {
     const auto prn = prng.next(steps);
-    return table_ + (YZ_LIKELY(prn < size_) ? prn : (prn % size_));
+    YZ_PREFETCH_READ(table_ + (YZ_LIKELY(prn < size_) ? prn : (prn % size_)), 3);
 }

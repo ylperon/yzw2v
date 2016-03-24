@@ -19,8 +19,8 @@ namespace yzw2v {
             explicit UnigramDistribution(const vocab::Vocabulary& vocab);
             uint32_t operator()(PRNG& prng) const noexcept;
 
-            const uint32_t* nexp_ptr(const PRNG& prng) const noexcept;
-            const uint32_t* nexp_ptr(const PRNG& prng, const uint32_t steps) const noexcept;
+            void prefetch(const PRNG& prng) const noexcept;
+            void prefetch(const PRNG& prng, const uint32_t steps) const noexcept;
 
         private:
             struct Entry {
