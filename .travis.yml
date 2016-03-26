@@ -2,7 +2,7 @@ sudo: false
 
 cache: apt
 
-language: c++
+language: cpp
 
 notifications:
     email: false
@@ -58,7 +58,7 @@ matrix:
             - gcc-5
 
 
-before_install:
+before_script:
   - |
     YAZEVNUL_IS_CLANG=false
     YAZEVNUL_IS_GCC=false
@@ -79,9 +79,7 @@ before_install:
     eval "${CC} --version"
     eval "${CXX} --version"
     cmake --version
-
-before_script:
-    - cmake .
+    cmake .
 
 script:
     - make VERBOSE=1
