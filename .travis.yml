@@ -62,8 +62,10 @@ matrix:
           export CC="/usr/bin/gcc-5"
           export CXX="/usr/bin/g++-5"
     - os: osx
+      osx_image: xcode7.3
       compiler: clang
     - os: osx
+      osx_image: xcode7.3
       compiler: gcc
 
 before_script:
