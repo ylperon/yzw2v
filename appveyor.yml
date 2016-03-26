@@ -11,8 +11,7 @@ configuration:
   - Debug
   - Release
 
-clone_folder:
-  - c:\projects\yzw2v
+clone_folder: c:\projects\yzw2v
 
 build:
   - project INSTALL.vcxproj
