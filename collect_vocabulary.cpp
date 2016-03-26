@@ -43,7 +43,7 @@ void yzw2v::vocab::CollectIntoVocabulary(const std::string& path, const uint32_t
             vocab.Add(reader.Read());
         }
 
-        if (vocab.LoadFactor() > 0.7) {
+        if (vocab.LoadFactor() > 0.7f) {
             RemoveInfrequentTokens(vocab, min_token_freq_during_collection);
             ++min_token_freq_during_collection;
         }
