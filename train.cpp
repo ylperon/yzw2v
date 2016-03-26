@@ -356,7 +356,7 @@ uint32_t ModelTrainer::WindowEnd(const uint32_t window_indent) const noexcept {
     return sentence_position_ + p_.window_size - window_indent + 1;
 }
 
-static void InitializeMatrix(yzw2v::num::Matrix& matrix, yzw2v::sampling::PRNG& prng) {
+static void InitializeMatrix(yzw2v::num::Matrix& matrix, yzw2v::sampling::PRNG& prng) noexcept {
     for (auto i = uint32_t{}; i < matrix.rows_count(); ++i) {
         auto* const row = matrix.row(i);
         for (auto j = uint32_t{}; j < matrix.columns_count(); ++j) {
