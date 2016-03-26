@@ -290,6 +290,22 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
 
 void ModelTrainer::CBOWApplyNegativeSampling() {
     shared_data_.unigram_distribution.prefetch(prng_);
+    YZ_PREFETCH_READ(neu1_, 3);
+    YZ_PREFETCH_READ(neu1_ + 4, 3);
+    YZ_PREFETCH_READ(neu1_ + 8, 3);
+    YZ_PREFETCH_READ(neu1_ + 12, 3);
+    YZ_PREFETCH_READ(neu1_ + 16, 3);
+    YZ_PREFETCH_READ(neu1_ + 20, 3);
+    YZ_PREFETCH_READ(neu1_ + 24, 3);
+    YZ_PREFETCH_READ(neu1_ + 26, 3);
+    YZ_PREFETCH_READ(neu1e_, 3);
+    YZ_PREFETCH_READ(neu1e_ + 4, 3);
+    YZ_PREFETCH_READ(neu1e_ + 8, 3);
+    YZ_PREFETCH_READ(neu1e_ + 12, 3);
+    YZ_PREFETCH_READ(neu1e_ + 16, 3);
+    YZ_PREFETCH_READ(neu1e_ + 20, 3);
+    YZ_PREFETCH_READ(neu1e_ + 24, 3);
+    YZ_PREFETCH_READ(neu1e_ + 26, 3);
     const auto cur_token = sentence_[sentence_position_];
     for (auto index = uint32_t{}; index < p_.negative_samples_count + 1; ++index) {
         auto target = uint32_t{};
