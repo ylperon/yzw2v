@@ -20,19 +20,19 @@ matrix:
       before_install:
         - |
           export CC="/usr/lib/llvm-3.6/bin/clang"
-          export CXXC="/usr/lib/llvm-3.6/bin/clang++"
+          export CXX="/usr/lib/llvm-3.6/bin/clang++"
     - os: linux
       compiler: clang-3.7
       before_install:
         - |
           export CC="/usr/lib/llvm-3.7/bin/clang"
-          export CXXC="/usr/lib/llvm-3.7/bin/clang++"
+          export CXX="/usr/lib/llvm-3.7/bin/clang++"
     - os: linux
       compiler: clang-3.8
       before_install:
         - |
           export CC="/usr/lib/llvm-3.8/bin/clang"
-          export CXXC="/usr/lib/llvm-3.8/bin/clang++"
+          export CXX="/usr/lib/llvm-3.8/bin/clang++"
     - os: linux
       compiler: gcc-4.9
       before_install:
