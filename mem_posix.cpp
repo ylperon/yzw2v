@@ -13,7 +13,7 @@ std::unique_ptr<float, yzw2v::mem::detail::Deleter>
 yzw2v::mem::AllocateFloatForSIMD(const uint32_t size) {
     auto* res = static_cast<float*>(nullptr);
     const auto actual_size = RoundSizeUpByVecSize(size);
-    const auto ret = posix_memalign(reinterpret_cast<void**>(&res), 128, sizeof(float) * actual_size);
+    const auto ret = posix_memalign(reinterpret_cast<void**>(&res), sizeof(float) * VEC_SIZE, sizeof(float) * actual_size);
     if (ret) {
         throw std::runtime_error{"aligned allocation failed"};
     }
