@@ -79,7 +79,7 @@ static void Report(const float alpha, const uint64_t words_processed_count,
                                / (seconds_passed.count() + 1)
                                / 1000;
 
-    fprintf(stdout, "%c[trainer] progress=%.6lf%% alpha=%.6lf words/sec=%.2lfK  ",
+    fprintf(stdout, "%c[trainer] progress=%.6lf%% alpha=%.6f words/sec=%.2lfK  ",
            '\r', progress, alpha, words_per_sec);
 }
 
@@ -191,7 +191,7 @@ void ModelTrainer::ReportAndUpdateAlpha() {
 
     auto new_alpha = static_cast<float>(
             p_.starting_alpha
-            * (1 - static_cast<double>(shared_data_.processed_words_count)
+            * (1 - static_cast<float>(shared_data_.processed_words_count)
                    / (shared_data_.text_words_count_ * p_.iterations_count + 1)
               )
             );
