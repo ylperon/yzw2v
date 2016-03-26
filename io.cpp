@@ -18,7 +18,7 @@ uint64_t yzw2v::io::FileSize(const std::string& path) {
 
 yzw2v::io::BinaryBufferedWriteProxy::BinaryBufferedWriteProxy(std::ostream& slave,
                                                               const size_t buffer_size)
-    : slave_(slave)
+    : slave_{slave}
     , buf_size_{buffer_size}
     , buf_{new uint8_t[buffer_size]}
 {
@@ -62,7 +62,7 @@ yzw2v::io::BinaryBufferedReadProxy::BinaryBufferedReadProxy(std::istream& slave,
                                                             const size_t slave_size,
                                                             const size_t buffer_size)
     : slave_size_left_{slave_size}
-    , slave_(slave)
+    , slave_{slave}
     , buf_size_{buffer_size}
     , buf_{new uint8_t[buffer_size]}
 {
