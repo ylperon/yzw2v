@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(yzw2v)
 
-find_package(Threads REQUIRED)
+if(NOT WIN32)
+    find_package(Threads REQUIRED)
+endif()
 
 set(BUILD_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS OFF)
