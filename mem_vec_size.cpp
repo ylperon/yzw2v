@@ -9,9 +9,9 @@ const uint32_t yzw2v::mem::VEC_SIZE = 1;
 #endif
 
 uint32_t yzw2v::mem::RoundSizeUpByVecSize(const uint32_t size) noexcept {
-    if (size % VEC_SIZE) {
-        return size;
+    if (const auto remainder = size % VEC_SIZE) {
+        return size + (VEC_SIZE - remainder);
     }
 
-    return size + (VEC_SIZE - (size % VEC_SIZE));
+    return size;
 }
