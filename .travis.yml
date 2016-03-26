@@ -63,6 +63,8 @@ matrix:
           export CXX="/usr/bin/g++-5"
     - os: osx
       compiler: clang
+    - os: osx
+      compiler: gcc
 
 before_script:
   cmake .
