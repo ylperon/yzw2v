@@ -1,6 +1,9 @@
 #include "token_reader.h"
+
 #include "vocabulary.h"
 #include "likely.h"
+
+#include <algorithm>
 
 #include <cstring>
 

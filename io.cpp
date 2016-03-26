@@ -1,6 +1,7 @@
 #include "io.h"
 #include "likely.h"
 
+#include <algorithm>
 #include <fstream>
 #include <istream>
 #include <ostream>

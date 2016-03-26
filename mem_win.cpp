@@ -1,5 +1,7 @@
 #include "mem.h"
 
+#include <stdexcept>
+
 #include <cstdlib>
 #include <cstring>
 
