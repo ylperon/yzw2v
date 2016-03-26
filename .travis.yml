@@ -20,6 +20,12 @@ matrix:
             - llvm-toolchain-precise-3.6
           packages:
             - clang-3.6
+      before_script:
+        - |
+          export CC="/usr/lib/llvm-3.6/bin/clang"
+          export CXX="/usr/lib/llvm-3.6/bin/clang++"
+          cmake --version
+          cmake .
     - compiler: clang
       env: CLANG_VERSION=3.7
       addons:
@@ -29,6 +35,12 @@ matrix:
             - llvm-toolchain-precise-3.7
           packages:
             - clang-3.7
+      before_script:
+        - |
+          export CC="/usr/lib/llvm-3.7/bin/clang"
+          export CXX="/usr/lib/llvm-3.7/bin/clang++"
+          cmake --version
+          cmake .
     - compiler: clang
       env: CLANG_VERSION=3.8
       addons:
@@ -38,6 +50,12 @@ matrix:
             - llvm-toolchain-precise
           packages:
             - clang-3.8
+      before_script:
+        - |
+          export CC="/usr/lib/llvm-3.8/bin/clang"
+          export CXX="/usr/lib/llvm-3.8/bin/clang++"
+          cmake --version
+          cmake .
     - compiler: gcc
       env: GCC_VERSION=4.9
       addons:
@@ -47,6 +65,12 @@ matrix:
           packages:
             - g++-4.9
             - gcc-4.9
+      before_script:
+        - |
+          export CC="/usr/bin/gcc-4.9"
+          export CXX="/usr/bin/g++-4.9"
+          cmake --version
+          cmake .
     - compiler: gcc
       env: GCC_VERSION=5
       addons:
@@ -56,30 +80,12 @@ matrix:
           packages:
             - g++-5
             - gcc-5
-
-
-before_script:
-  - |
-    YAZEVNUL_IS_CLANG=false
-    YAZEVNUL_IS_GCC=false
-    if [ "${CC}" == 'clang' ]; then
-        YAZEVNUL_IS_CLANG=true
-    elif [ "${CC}" == 'gcc' ]; then
-        YAZEVNUL_IS_GCC=true
-    fi
-
-    if [ "${YAZEVNUL_IS_CLANG}" = true ]; then
-        export CC="/usr/lib/llvm-${CLANG_VERSION}/bin/clang"
-        export CXX="/usr/lib/llvm-${CLANG_VERSION}/bin/clang++"
-    elif [ "${YAZEVNUL_IS_GCC}" = true ]; then
-        export CC="/usr/bin/gcc-${GCC_VERSION}"
-        export CXX="/usr/bin/g++-${GCC_VERSION}"
-    fi
-
-    eval "${CC} --version"
-    eval "${CXX} --version"
-    cmake --version
-    cmake .
+      before_script:
+        - |
+          export CC="/usr/bin/gcc-5"
+          export CXX="/usr/bin/g++-5"
+          cmake --version
+          cmake .
 
 script:
     - make VERBOSE=1
