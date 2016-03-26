@@ -168,6 +168,7 @@ static int Main(const Args& args) {
         return EXIT_SUCCESS;
     }
 
+    std::clog << "Vocabulary size: " << vocab.size() << std::endl;
     const yzw2v::huff::HuffmanTree huffman_tree{vocab};
     const auto params = MakeParamsFromArgs(args);
     const auto start_time = std::chrono::high_resolution_clock::now();
