@@ -17,14 +17,34 @@ matrix:
   include:
     - os: linux
       compiler: clang-3.6
+      before_install:
+        - |
+          export CC="/usr/lib/llvm-3.6/bin/clang"
+          export CXXC="/usr/lib/llvm-3.6/bin/clang++"
     - os: linux
       compiler: clang-3.7
+      before_install:
+        - |
+          export CC="/usr/lib/llvm-3.7/bin/clang"
+          export CXXC="/usr/lib/llvm-3.7/bin/clang++"
     - os: linux
       compiler: clang-3.8
+      before_install:
+        - |
+          export CC="/usr/lib/llvm-3.8/bin/clang"
+          export CXXC="/usr/lib/llvm-3.8/bin/clang++"
     - os: linux
       compiler: gcc-4.9
+      before_install:
+        - |
+          export CC="/usr/bin/gcc-4.9"
+          export CXX="/usr/bin/g++-4.9"
     - os: linux
       compiler: gcc-5
+      before_install:
+        - |
+          export CC="/usr/bin/gcc-5"
+          export CXX="/usr/bin/g++-5"
 
 before_script:
   cmake .
