@@ -58,5 +58,5 @@ add_executable(yzw2v
 )
 
 target_link_libraries(yzw2v
-    pthread
+    ${CMAKE_THREAD_LIBS_INIT}
 )
