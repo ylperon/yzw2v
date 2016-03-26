@@ -52,14 +52,15 @@ namespace yzw2v {
             }
 
             struct Block {
-                const std::unique_ptr<uint8_t[]> begin;
                 void* current;
                 size_t memory_left;
+                std::unique_ptr<uint8_t[]> begin;
 
                 explicit Block(const size_t custom_block_size)
-                    : begin{new uint8_t[custom_block_size]}
-                    , current{begin.get()}
-                    , memory_left{custom_block_size} {
+                    : memory_left{custom_block_size}
+                    , begin{new uint8_t[custom_block_size]}
+                {
+                    current = begin.get();
                     std::memset(current, 0, memory_left);
                 }
             };
