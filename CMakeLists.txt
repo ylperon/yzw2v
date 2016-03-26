@@ -6,6 +6,10 @@ find_package(Threads REQUIRED)
 set(BUILD_STATIC_LIBS ON)
 set(BUILD_SHARED_LIBS OFF)
 
+# for some reason CMake adds -rdynamic flag, and we have to remove it
+# via https://cmake.org/pipermail/cmake/2009-October/032948.html
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
