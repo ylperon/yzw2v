@@ -224,7 +224,7 @@ void ModelTrainer::ReadSentence() {
                 (std::sqrt(count / (p_.min_token_freq_threshold * shared_data_.text_words_count_)) + 1.f)
                 * (p_.min_token_freq_threshold * shared_data_.text_words_count_)
                 / count;
-            if (prob < prng_.real_0_inc_1_inc()) {
+            if (static_cast<double>(prob) < prng_.real_0_inc_1_inc()) {
                 continue;
             }
         }
