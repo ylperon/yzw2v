@@ -16,7 +16,6 @@
 #endif
 
 static constexpr uint32_t MAX_NUMBER_OF_TOKENS = 21000000;
-static constexpr uint32_t MIN_TOKEN_FREQ = 5;
 
 static void SetFloatinPointEnvironment() {
 #if defined(__linux__)
