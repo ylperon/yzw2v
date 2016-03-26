@@ -1,20 +1,7 @@
 #include "matrix.h"
 
-#if defined(__AVX__)
-static constexpr uint32_t VECTOR_SIZE = 8;
-#elif defined(__SSE__)
-static constexpr uint32_t VECTOR_SIZE = 4;
-#else
-static constexpr uint32_t VECTOR_SIZE = 1;
-#endif
-
 yzw2v::num::Matrix::Matrix(const uint32_t rows_count, const uint32_t columns_count)
-    : padded_columns_count_{columns_count
-                            + ((columns_count % VECTOR_SIZE)
-                               ? (VECTOR_SIZE - (columns_count % VECTOR_SIZE))
-                               : uint32_t{0}
-                              )
-                           }
+    : padded_columns_count_{mem::RoundSizeUpByVecSize(columns_count)}
     , rows_count_{rows_count}
     , columns_count_{columns_count}
     , matrix_holder_{mem::AllocateFloatForSIMD(rows_count * padded_columns_count_)}
