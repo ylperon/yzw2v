@@ -59,6 +59,8 @@ add_executable(yzw2v
     mem_vec_size.cpp
 )
 
-target_link_libraries(yzw2v
-    ${CMAKE_THREAD_LIBS_INIT}
-)
+if(NOT WIN32)
+    target_link_libraries(yzw2v
+        ${CMAKE_THREAD_LIBS_INIT}
+    )
+endif
