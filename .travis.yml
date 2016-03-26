@@ -1,5 +1,5 @@
 sudo: false
-
+language: cpp
 cache: apt
 
 notifications:
@@ -25,13 +25,14 @@ matrix:
     - os: linux
       compiler: gcc-4.9
     - os: linux
-      compiler: gcc-5.0
+      compiler: gcc-5
 
 before_script:
   cmake .
 
 script:
   make VERBOSE=1
+
 branches:
     only:
         - master
