@@ -1,6 +1,25 @@
+version: 1.0.{build}-{branch}
+
+branches:
+  only:
+    - master
+
+skip_tags: true
 os: Visual Studio 2015
-configuration: Debug
+
+configuration:
+  - Debug
+  - Release
+
+clone_folder:
+  c:\projects\yzw2v
+
+build:
+  project INSTALL.vcxproj
+
+
 build_script:
   - |
-    cmake -G "Visual Studio 14 2015 Win64" .
+    cd c:\projects\yzw2v
+    cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=%P%
     msbuild yzw2v.sln /p:Platform=x64 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
