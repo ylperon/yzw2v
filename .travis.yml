@@ -26,6 +26,8 @@ matrix:
           export CXX="/usr/lib/llvm-3.6/bin/clang++"
           cmake --version
           cmake .
+      script:
+          - make VERBOSE=1
     - compiler: clang
       env: CLANG_VERSION=3.7
       addons:
@@ -41,6 +43,8 @@ matrix:
           export CXX="/usr/lib/llvm-3.7/bin/clang++"
           cmake --version
           cmake .
+      script:
+          - make VERBOSE=1
     - compiler: clang
       env: CLANG_VERSION=3.8
       addons:
@@ -56,6 +60,8 @@ matrix:
           export CXX="/usr/lib/llvm-3.8/bin/clang++"
           cmake --version
           cmake .
+      script:
+          - make VERBOSE=1
     - compiler: gcc
       env: GCC_VERSION=4.9
       addons:
@@ -71,6 +77,8 @@ matrix:
           export CXX="/usr/bin/g++-4.9"
           cmake --version
           cmake .
+      script:
+          - make VERBOSE=1
     - compiler: gcc
       env: GCC_VERSION=5
       addons:
@@ -86,9 +94,9 @@ matrix:
           export CXX="/usr/bin/g++-5"
           cmake --version
           cmake .
+      script:
+          - make VERBOSE=1
 
-script:
-    - make VERBOSE=1
 
 branches:
     only:
