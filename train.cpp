@@ -61,7 +61,7 @@ namespace {
     };
 } // namespace
 
-static std::chrono::seconds GetTimePassed(const SharedData& data) {
+static std::chrono::seconds GetTimePassed(const SharedData& data) noexcept {
     return std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::high_resolution_clock::now() - data.start_time
     );
