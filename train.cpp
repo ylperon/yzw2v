@@ -80,7 +80,7 @@ static void Report(const float alpha, const uint64_t words_processed_count,
                                / 1000;
 
     fprintf(stdout, "%c[trainer] progress=%.6lf%% alpha=%.6f words/sec=%.2lfK  ",
-           '\r', progress, alpha, words_per_sec);
+           '\r', progress, static_cast<double>(alpha), words_per_sec);
 }
 
 namespace {
