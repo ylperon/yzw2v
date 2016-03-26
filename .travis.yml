@@ -5,97 +5,33 @@ cache: apt
 notifications:
     email: false
 
-os: linux
+addons:
+  apt:
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-3.6
+    - llvm-toolchain-precise-3.7
+    - llvm-toolchain-precise # latest
+    - cmake
+    - build_essential
 
 matrix:
   include:
-    - compiler: clang
-      env: CLANG_VERSION=3.6
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-          packages:
-            - clang-3.6
-      before_script:
-        - |
-          export CC="/usr/lib/llvm-3.6/bin/clang"
-          export CXX="/usr/lib/llvm-3.6/bin/clang++"
-          cmake --version
-          cmake .
-      script:
-          - make VERBOSE=1
-    - compiler: clang
-      env: CLANG_VERSION=3.7
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-          packages:
-            - clang-3.7
-      before_script:
-        - |
-          export CC="/usr/lib/llvm-3.7/bin/clang"
-          export CXX="/usr/lib/llvm-3.7/bin/clang++"
-          cmake --version
-          cmake .
-      script:
-          - make VERBOSE=1
-    - compiler: clang
-      env: CLANG_VERSION=3.8
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise
-          packages:
-            - clang-3.8
-      before_script:
-        - |
-          export CC="/usr/lib/llvm-3.8/bin/clang"
-          export CXX="/usr/lib/llvm-3.8/bin/clang++"
-          cmake --version
-          cmake .
-      script:
-          - make VERBOSE=1
-    - compiler: gcc
-      env: GCC_VERSION=4.9
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.9
-            - gcc-4.9
-      before_script:
-        - |
-          export CC="/usr/bin/gcc-4.9"
-          export CXX="/usr/bin/g++-4.9"
-          cmake --version
-          cmake .
-      script:
-          - make VERBOSE=1
-    - compiler: gcc
-      env: GCC_VERSION=5
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gcc-5
-      before_script:
-        - |
-          export CC="/usr/bin/gcc-5"
-          export CXX="/usr/bin/g++-5"
-          cmake --version
-          cmake .
-      script:
-          - make VERBOSE=1
+    - os: linux
+      compiler: clang-3.6
+    - os: linux
+      compiler: clang-3.7
+    - os: linux
+      compiler: clang-3.8
+    - os: linux
+      compiler: gcc-4.9
+    - os: linux
+      compiler: gcc-5.0
 
+before_script:
+  cmake .
 
+script:
+  make VERBOSE=1
 branches:
     only:
         - master
