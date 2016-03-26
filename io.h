@@ -2,6 +2,7 @@
 
 #include <iosfwd>
 #include <memory>
+#include <string>
 
 #include <cstdint>
 
