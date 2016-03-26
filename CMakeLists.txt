@@ -57,3 +57,7 @@ add_executable(yzw2v
     matrix.cpp
     mem_vec_size.cpp
 )
+
+target_link_libraries(yzw2v
+    ${CMAKE_THREAD_LIBS_INIT}
+)
