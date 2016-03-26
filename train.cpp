@@ -38,6 +38,7 @@ namespace {
         yzw2v::num::Matrix* const syn1hs;
         yzw2v::num::Matrix* const syn1neg;
 
+        const uint64_t text_words_count_;
         uint64_t processed_words_count;
         float alpha;
         decltype(std::chrono::high_resolution_clock::now()) start_time;
@@ -53,6 +54,7 @@ namespace {
             , syn0{syn0_}
             , syn1hs{syn1hs_}
             , syn1neg{syn1neg_}
+            , text_words_count_{vocab.TextWordCount()}
             , processed_words_count{}
             , alpha{alpha_}
             , start_time{std::chrono::high_resolution_clock::now()}
@@ -104,7 +106,6 @@ namespace {
             , sentence_position_{0}
             , prev_word_count_{0}
             , word_count_{0}
-            , text_words_count_{vocab.TextWordCount()}
             , token_reader_{text_file_path, bytes_to_read_from_text_file, text_file_offset}
             , iteration_{0}
         {
@@ -144,7 +145,6 @@ namespace {
         uint64_t prev_word_count_;
         uint64_t word_count_;
 
-        const uint64_t text_words_count_;
         yzw2v::io::TokenReader token_reader_;
         uint32_t iteration_;
     };
@@ -186,13 +186,13 @@ void ModelTrainer::TrainCBOW() {
 void ModelTrainer::ReportAndUpdateAlpha() {
     shared_data_.processed_words_count += word_count_ - prev_word_count_;
     prev_word_count_ = word_count_;
-    Report(shared_data_.alpha, shared_data_.processed_words_count, text_words_count_,
+    Report(shared_data_.alpha, shared_data_.processed_words_count, shared_data_.text_words_count_,
             p_.iterations_count, GetTimePassed(shared_data_));
 
     auto new_alpha = static_cast<float>(
             p_.starting_alpha
             * (1 - static_cast<double>(shared_data_.processed_words_count)
-                   / (text_words_count_ * p_.iterations_count + 1)
+                   / (shared_data_.text_words_count_ * p_.iterations_count + 1)
               )
             );
     if (new_alpha < p_.starting_alpha * 0.0001f) {
@@ -223,8 +223,8 @@ void ModelTrainer::ReadSentence() {
             // subsampling goes here
             const auto count = vocab_.Count(token_id);
             const auto prob =
-                (std::sqrt(count / (p_.min_token_freq_threshold * text_words_count_)) + 1.f)
-                * (p_.min_token_freq_threshold * text_words_count_)
+                (std::sqrt(count / (p_.min_token_freq_threshold * shared_data_.text_words_count_)) + 1.f)
+                * (p_.min_token_freq_threshold * shared_data_.text_words_count_)
                 / count;
             if (prob < prng_.real_0_inc_1_inc()) {
                 continue;
