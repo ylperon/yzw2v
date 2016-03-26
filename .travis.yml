@@ -1,0 +1,93 @@
+sudo: false
+
+cache: apt
+
+language: c++
+
+notifications:
+    email: false
+
+os: linux
+
+matrix:
+  include:
+    - compiler: clang
+      env: CLANG_VERSION=3.6
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+    - compiler: clang
+      env: CLANG_VERSION=3.6
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+    - compiler: clang
+      env: CLANG_VERSION=3.8
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise # latest
+          packages:
+            - clang-3.8
+    - compiler: gcc
+      env: GCC_VERSION=4.9
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+            - gcc-4.9
+    - compiler: gcc
+      env: GCC_VERSION=5
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gcc-5
+            - libprotobuf-dev
+            - protobuf-compiler
+
+
+before_install:
+  - |
+    YAZEVNUL_IS_CLANG=false
+    YAZEVNUL_IS_GCC=false
+    if [ "${CC}" == 'clang' ]; then
+        YAZEVNUL_IS_CLANG=true
+    elif [ "${CC}" == 'gcc' ]; then
+        YAZEVNUL_IS_GCC=true
+    fi
+
+    if [ "${YAZEVNUL_IS_CLANG}" = true ]; then
+        export CC="/usr/lib/llvm-${CLANG_VERSION}/bin/clang"
+        export CXX="/usr/lib/llvm-${CLANG_VERSION}/bin/clang++"
+    elif [ "${YAZEVNUL_IS_GCC}" = true ]; then
+        export CC="/usr/bin/gcc-${GCC_VERSION}"
+        export CXX="/usr/bin/g++-${GCC_VERSION}"
+    fi
+
+    eval "${CC} --version"
+    eval "${CXX} --version"
+    cmake --version
+
+before_script:
+    - cmake .
+
+script:
+    - make VERBOSE=1
+
+branches:
+    only:
+        - master
