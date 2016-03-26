@@ -189,12 +189,10 @@ void ModelTrainer::ReportAndUpdateAlpha() {
     Report(shared_data_.alpha, shared_data_.processed_words_count, shared_data_.text_words_count_,
             p_.iterations_count, GetTimePassed(shared_data_));
 
-    auto new_alpha = static_cast<float>(
-            p_.starting_alpha
-            * (1 - static_cast<float>(shared_data_.processed_words_count)
-                   / (shared_data_.text_words_count_ * p_.iterations_count + 1)
-              )
-            );
+    auto new_alpha = p_.starting_alpha
+                     * (1 - static_cast<float>(shared_data_.processed_words_count)
+                            / (shared_data_.text_words_count_ * p_.iterations_count + 1)
+                       );
     if (new_alpha < p_.starting_alpha * 0.0001f) {
         new_alpha = p_.starting_alpha * 0.0001f;
     }
