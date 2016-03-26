@@ -97,7 +97,7 @@ namespace {
             : p_{params}
             , neu1_holder_{yzw2v::mem::AllocateFloatForSIMD(params.vector_size)}
             , neu1e_holder_{yzw2v::mem::AllocateFloatForSIMD(params.vector_size)}
-            , shared_data_{shared_data}
+            , shared_data_(shared_data)
             , neu1_{neu1_holder_.get()}
             , neu1e_{neu1e_holder_.get()}
             , vocab_{vocab}
