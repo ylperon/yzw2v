@@ -38,15 +38,6 @@ matrix:
             - llvm-toolchain-precise
           packages:
             - clang-3.8
-    - compiler: clang
-      env: CLANG_VERSION=3.9
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise # latest
-          packages:
-            - clang-3.9
     - compiler: gcc
       env: GCC_VERSION=4.9
       addons:
