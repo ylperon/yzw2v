@@ -289,6 +289,7 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
 }
 
 void ModelTrainer::CBOWApplyNegativeSampling() {
+    shared_data_.unigram_distribution.prefetch(prng_);
     const auto cur_token = sentence_[sentence_position_];
     for (auto index = uint32_t{}; index < p_.negative_samples_count + 1; ++index) {
         auto target = uint32_t{};
@@ -298,7 +299,6 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             label = 1;
         } else {
             target = shared_data_.unigram_distribution(prng_);
-            shared_data_.unigram_distribution.prefetch(prng_);
             if (cur_token == target) {
                 continue;
             }
@@ -322,6 +322,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
         }
 
         yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1neg->row(target), g);
+        shared_data_.unigram_distribution.prefetch(prng_);
         yzw2v::num::AddVector(shared_data_.syn1neg->row(target), p_.vector_size, neu1_, g);
     }
 }
