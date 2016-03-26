@@ -1,6 +1,5 @@
 os: Visual Studio 2015
 configuration: Debug
-language: cpp
 build_script:
   - |
     cmake -G "Visual Studio 14 2015 Win64" .
