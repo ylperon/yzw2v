@@ -13,9 +13,6 @@ configuration:
 
 clone_folder: c:\projects\yzw2v
 
-build:
-  - project INSTALL.vcxproj
-
 install:
   - git submodule update --init --recursive
 
