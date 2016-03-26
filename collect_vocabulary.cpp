@@ -19,7 +19,7 @@
  * means in-memory (see https://en.wikipedia.org/wiki/Tmpfs), so it should be fast.
  */
 static void RemoveInfrequentTokens(yzw2v::vocab::Vocabulary& vocab, const uint32_t min_token_freq) {
-    const std::unique_ptr<char[]> buf{new char[TMP_MAX + 1]};
+    const std::unique_ptr<char[]> buf{new char[static_cast<uint32_t>(TMP_MAX) + 1]};
     // btw, at least on Mac this function is deprecated
     const auto tmp_file_path = std::string{std::tmpnam(buf.get())};
 
