@@ -101,9 +101,9 @@ static Args ParseOptions(int argc, char* argv[]) {
         cxxopts::value<>(args.use_hierarchical_softmax)
     )(
         "negative",
-        "INT",
+        "Number of negative examples",
         cxxopts::value<>(args.number_of_negative_samples)->default_value("5"),
-        "Number of negative examples"
+        "INT"
     )(
         "threads",
         "Use <int> threads",
