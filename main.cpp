@@ -101,7 +101,7 @@ static Args ParseOptions(int argc, char* argv[]) {
         cxxopts::value<>(args.use_hierarchical_softmax)
     )(
         "negative",
-        "Number of negative examples",
+        "INT",
         cxxopts::value<>(args.number_of_negative_samples)->default_value("5"),
         "Number of negative examples"
     )(
@@ -120,7 +120,7 @@ static Args ParseOptions(int argc, char* argv[]) {
         cxxopts::value<>(args.min_word_frequency)->default_value("5"),
         "INT"
     )(
-        "fail-on-bad-floating-arighmetics",
+        "fail-on-bad-floating-arithmetics",
         "properly set floating point environment",
         cxxopts::value<>(args.fail_on_bad_floating_arithmetics)
     )(
