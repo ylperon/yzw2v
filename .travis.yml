@@ -11,7 +11,7 @@ addons:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-precise-3.6
       - llvm-toolchain-precise-3.7
-      - llvm-toolchain-precise # latest
+      - llvm-toolchain-precise-3.8
     packages:
       - clang-3.6
       - clang-3.7
