@@ -176,8 +176,8 @@ def _make_word2vec_cmd(args, thread_count):
         cmd.extend(['-window', args.w2v_window])
     if args.w2v_sample:
         cmd.extend(['-sample', args.w2v_sample])
-    if '0' != args.w2v_hs:
-        cmd.extend(['-hs'])
+    if args.w2v_hs:
+        cmd.extend(['-hs', args.w2v_hs])
     if args.w2v_negative:
         cmd.extend(['-negative', args.w2v_negative])
     if args.w2v_iter:
