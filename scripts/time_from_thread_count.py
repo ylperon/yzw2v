@@ -126,7 +126,7 @@ def _parse_options():
 
 
 def _make_yzw2v_cmd(args, thread_count):
-    cmd = [args.binary_path]
+    cmd = [args.binary_path, '--threads', str(thread_count)]
     if args.w2v_size:
         cmd.extend(['--size', args.w2v_size])
     if args.w2v_train:
@@ -157,7 +157,7 @@ def _make_yzw2v_cmd(args, thread_count):
 
 
 def _make_word2vec_cmd(args, thread_count):
-    cmd = [args.binary_path]
+    cmd = [args.binary_path, '-threads', str(thread_count)]
     if args.w2v_size:
         cmd.extend(['-size', args.w2v_size])
     if args.w2v_train:
