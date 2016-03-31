@@ -192,7 +192,7 @@ def _make_cmd(args, thread_count):
     if 'yzw2v' == args.binary_type:
         return _make_yzw2v_cmd(args, thread_count)
 
-    return _make_word2vec_cmd(args.thread_count, thread_count)
+    return _make_word2vec_cmd(args, thread_count)
 
 
 def _time_cmd(cmd):
