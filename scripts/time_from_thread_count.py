@@ -205,6 +205,7 @@ def _time_cmd(cmd):
 def _main(args):
     with open(args.table_path, 'w') as out:
         for thread_count in range(args.min_thread_count, args.max_thread_count + 1):
+            out.write('{}'.format(thread_count))
             cmd = _make_cmd(args, thread_count)
             for _ in range(args.repeat_count):
                 sys.stderr.write('cmd: {}\n'.format(cmd))
@@ -212,6 +213,9 @@ def _main(args):
                 t = _time_cmd(cmd)
                 out.write('\t{}'.format(t))
                 out.flush()
+
+            out.write('\n')
+            out.flush()
 
 
 if '__main__' == __name__:
