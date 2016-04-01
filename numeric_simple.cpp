@@ -1,5 +1,9 @@
 #include "numeric.h"
 
+void yzw2v::num::Prefetch(const float* v) noexcept {
+    (void)v;
+}
+
 void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexcept {
     for (auto i = uint32_t{}; i < v_size; ++i) {
         v[i] = value;
