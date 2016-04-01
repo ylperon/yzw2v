@@ -320,10 +320,10 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
-        shared_data_.unigram_distribution.prefetch(prng_);
         yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1neg->row(target), g);
-        yzw2v::num::Prefetch(shared_data_.syn1neg->row(shared_data_.unigram_distribution.next(prng_)));
+        shared_data_.unigram_distribution.prefetch(prng_);
         yzw2v::num::AddVector(shared_data_.syn1neg->row(target), p_.vector_size, neu1_, g);
+        yzw2v::num::Prefetch(shared_data_.syn1neg->row(shared_data_.unigram_distribution.next(prng_)));
     }
 }
 
