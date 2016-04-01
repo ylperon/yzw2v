@@ -18,6 +18,7 @@ namespace yzw2v {
         public:
             explicit UnigramDistribution(const vocab::Vocabulary& vocab);
             uint32_t operator()(PRNG& prng) const noexcept;
+            uint32_t next(const PRNG& prng) const noexcept;
 
             void prefetch(const PRNG& prng) const noexcept;
             void prefetch(const PRNG& prng, const uint32_t steps) const noexcept;

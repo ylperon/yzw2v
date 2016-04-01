@@ -137,6 +137,17 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
     return table_[index].alias + 1;
 }
 
+uint32_t yzw2v::sampling::UnigramDistribution::next(const PRNG& prng) const noexcept {
+    auto local_prng = prng;
+    const auto index = static_cast<uint32_t>(size_ * local_prng.real_0_inc_1_exc());
+    const auto prob = static_cast<float>(local_prng.real_0_inc_1_inc());
+    if (prob < table_[index].prob) {
+        return index + 1;
+    }
+
+    return table_[index].alias + 1;
+}
+
 void yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng) const noexcept {
     (void)prng;
 }

@@ -6,6 +6,7 @@ namespace yzw2v {
     namespace num {
         void Fill(float* v, const uint32_t v_size, const float value) noexcept;
         void Zeroize(float* v, const uint32_t v_size) noexcept;
+        void Prefetch(const float* v) noexcept;
 
         void DivideVector(float* v, const uint32_t v_size, const float divisor) noexcept;
 

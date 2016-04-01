@@ -5,6 +5,18 @@
 
 #include <xmmintrin.h>
 
+void yzw2v::num::Prefetch(const float* v) noexcept {
+    // for two unrolled loops
+    _mm_prefetch(v, _MM_HINT_T0);
+    _mm_prefetch(v + 4, _MM_HINT_T0);
+    _mm_prefetch(v + 8, _MM_HINT_T0);
+    _mm_prefetch(v + 12, _MM_HINT_T0);
+    _mm_prefetch(v + 16, _MM_HINT_T0);
+    _mm_prefetch(v + 20, _MM_HINT_T0);
+    _mm_prefetch(v + 24, _MM_HINT_T0);
+    _mm_prefetch(v + 28, _MM_HINT_T0);
+}
+
 void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexcept {
     v = YZ_ASSUME_ALIGNED(v, 128);
     const auto wide_value = _mm_set1_ps(value);

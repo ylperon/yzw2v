@@ -49,6 +49,15 @@ uint32_t yzw2v::sampling::UnigramDistribution::operator() (PRNG& prng) const noe
     return (prn % (vocab_size_ - 1)) + 1;
 }
 
+uint32_t yzw2v::sampling::UnigramDistribution::next(const PRNG& prng) const noexcept {
+    const auto prn = prng.next();
+    if (const auto val = table_[prn % size_]) {
+        return val;
+    }
+
+    return (prn % (vocab_size_ - 1)) + 1;
+}
+
 void yzw2v::sampling::UnigramDistribution::prefetch(const PRNG& prng) const noexcept {
     YZ_PREFETCH_READ(table_ + (prng.next() % size_), 3);
 }
