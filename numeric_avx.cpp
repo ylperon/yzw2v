@@ -7,6 +7,7 @@
 
 void yzw2v::num::Prefetch(const float* v) noexcept {
     // for two unrolled loops
+    v = YZ_ASSUME_ALIGNED(v, 256);
     _mm_prefetch(v, _MM_HINT_T0);
     _mm_prefetch(v + 8, _MM_HINT_T0);
     _mm_prefetch(v + 16, _MM_HINT_T0);
