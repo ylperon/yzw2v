@@ -6,20 +6,11 @@
 #include <xmmintrin.h>
 
 void yzw2v::num::Prefetch(const float* v) noexcept {
-    // for two unrolled loops
     v = YZ_ASSUME_ALIGNED(v, 128);
     _mm_prefetch(v, _MM_HINT_T0);
     _mm_prefetch(v + 4, _MM_HINT_T0);
     _mm_prefetch(v + 8, _MM_HINT_T0);
     _mm_prefetch(v + 12, _MM_HINT_T0);
-    _mm_prefetch(v + 16, _MM_HINT_T0);
-    _mm_prefetch(v + 20, _MM_HINT_T0);
-    _mm_prefetch(v + 24, _MM_HINT_T0);
-    _mm_prefetch(v + 28, _MM_HINT_T0);
-    _mm_prefetch(v + 32, _MM_HINT_T0);
-    _mm_prefetch(v + 36, _MM_HINT_T0);
-    _mm_prefetch(v + 40, _MM_HINT_T0);
-    _mm_prefetch(v + 44, _MM_HINT_T0);
 }
 
 void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexcept {
