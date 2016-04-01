@@ -135,8 +135,8 @@ def _make_yzw2v_cmd(args, thread_count):
         cmd.extend(['--save-vocab', args.w2v_save_vocab])
     if args.w2v_read_vocab:
         cmd.extend(['--read-vocab', args.w2v_read_vocab])
-    if args.w2v_binary:
-        cmd.extend(['--binary', args.w2v_binary])
+#    if args.w2v_binary:
+#        cmd.extend(['--binary', args.w2v_binary])
     if args.w2v_alpha:
         cmd.extend(['--alpha', args.w2v_alpha])
     if args.w2v_output:
