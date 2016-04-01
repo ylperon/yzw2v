@@ -324,6 +324,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
         shared_data_.unigram_distribution.prefetch(prng_);
         yzw2v::num::AddVector(shared_data_.syn1neg->row(target), p_.vector_size, neu1_, g);
         yzw2v::num::Prefetch(shared_data_.syn1neg->row(shared_data_.unigram_distribution.next(prng_)));
+        yzw2v::num::Prefetch(neu1_);
     }
 }
 
