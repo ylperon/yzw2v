@@ -296,23 +296,15 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
 void ModelTrainer::CBOWApplyNegativeSampling() {
     const auto negative_samples_count = [this]{
         const auto cur_token = sentence_[sentence_position_];
-        auto res = uint32_t{};
+        negative_samples_[0] = {cur_token, 0.0f};
+        auto res = uint32_t{1};
         for (auto index = uint32_t{}; index < p_.negative_samples_count + 1; ++index) {
-            auto target = uint32_t{};
-            auto label = float{};
-            if (0 == index) {
-                target = cur_token;
-                label = 1.0;
-            } else {
-                target = shared_data_.unigram_distribution(prng_);
-                if (cur_token == target) {
-                    continue;
-                }
-
-                label = 0;
+            const auto target = shared_data_.unigram_distribution(prng_);
+            if (cur_token == target) {
+                continue;
             }
 
-            negative_samples_[res++] = {target, label};
+            negative_samples_[res++] = {target, 0.0f};
         }
 
         return res;
