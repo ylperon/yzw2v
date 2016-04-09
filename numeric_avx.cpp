@@ -7,14 +7,9 @@
 
 void yzw2v::num::Prefetch(const float* v) noexcept {
     v = YZ_ASSUME_ALIGNED(v, 256);
-    _mm_prefetch(v, _MM_HINT_T0);
-    _mm_prefetch(v + 8, _MM_HINT_T0);
-    _mm_prefetch(v + 16, _MM_HINT_T0);
-    _mm_prefetch(v + 24, _MM_HINT_T0);
-    _mm_prefetch(v + 32, _MM_HINT_T0);
-    _mm_prefetch(v + 40, _MM_HINT_T0);
-    _mm_prefetch(v + 48, _MM_HINT_T0);
-    _mm_prefetch(v + 56, _MM_HINT_T0);
+    for (auto i = uint32_t{}; i < 8 * 2; ++i) {
+        _mm_prefetch(v + i * 8, _MM_HINT_T0);
+    }
 }
 
 void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexcept {

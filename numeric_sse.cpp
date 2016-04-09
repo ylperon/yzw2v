@@ -8,10 +8,9 @@
 
 void yzw2v::num::Prefetch(const float* v) noexcept {
     v = YZ_ASSUME_ALIGNED(v, 128);
-    _mm_prefetch(v, _MM_HINT_T0);
-    _mm_prefetch(v + 4, _MM_HINT_T0);
-    _mm_prefetch(v + 8, _MM_HINT_T0);
-    _mm_prefetch(v + 12, _MM_HINT_T0);
+    for (auto i = uint32_t{}; i < 4 * 2; ++i) {
+        _mm_prefetch(v + i * 4, _MM_HINT_T0);
+    }
 }
 
 void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexcept {
