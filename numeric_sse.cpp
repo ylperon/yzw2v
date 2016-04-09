@@ -8,7 +8,7 @@
 
 void yzw2v::num::Prefetch(const float* v) noexcept {
     v = YZ_ASSUME_ALIGNED(v, 128);
-    for (auto i = uint32_t{}; i < 4 * 2; ++i) {
+    for (auto i = uint32_t{}; i < 4 * 4; ++i) {
         _mm_prefetch(v + i * 4, _MM_HINT_T0);
     }
 }
