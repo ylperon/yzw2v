@@ -326,15 +326,17 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
 
         auto g = float{};
         if (f > MAX_EXP_FLT) {
-            g = (sample->label - 1.0f) * shared_data_.alpha;
+            g = (sample->label - 1.0f);
         } else if (f < -MAX_EXP_FLT) {
-            g = (sample->label - 0.0f) * shared_data_.alpha;
+            g = (sample->label - 0.0f);
         } else {
             const auto exp_index = static_cast<uint32_t>(
                     (f + MAX_EXP_FLT) * (EXP_TABLE_SIZE / MAX_EXP / 2)
                     );
-            g = (sample->label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
+            g = (sample->label - shared_data_.exp_table[exp_index]);
         }
+
+        g *= shared_data_.alpha;
 
         yzw2v::num::AddVector(neu1e_, p_.vector_size, syn1neg_row, g);
         yzw2v::num::AddVector(syn1neg_row, p_.vector_size, neu1_, g);
