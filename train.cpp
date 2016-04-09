@@ -330,6 +330,13 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
 
         g *= shared_data_.alpha;
 
+        const auto* const next_sample = sample + 1;
+        if (next_sample < negative_samples_end) {
+            if (next_sample->target != sample->target) {
+                yzw2v::num::Prefetch(shared_data_.syn1neg->row(next_sample->target));
+            }
+        }
+
         yzw2v::num::AddVector(neu1e_, p_.vector_size, syn1neg_row, g);
         yzw2v::num::AddVector(syn1neg_row, p_.vector_size, neu1_, g);
     }
