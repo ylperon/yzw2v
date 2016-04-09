@@ -16,7 +16,6 @@ void yzw2v::num::Prefetch(const float* v) noexcept {
 
 void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexcept {
     const auto v_size_rounded_up = mem::RoundSizeUpByVecSize(v_size);
-    YZ_ASSUME(v_size_rounded_up % 4 == 0);
     v = YZ_ASSUME_ALIGNED(v, 128);
     const auto wide_value = _mm_set1_ps(value);
     for (const auto* const v_end = v + v_size_rounded_up; v < v_end; v += 4) {
@@ -30,7 +29,6 @@ void yzw2v::num::Zeroize(float* const v, const uint32_t v_size) noexcept {
 
 void yzw2v::num::DivideVector(float* v, const uint32_t v_size, const float divisor) noexcept {
     const auto v_size_rounded_up = mem::RoundSizeUpByVecSize(v_size);
-    YZ_ASSUME(v_size_rounded_up % 4 == 0);
     v = YZ_ASSUME_ALIGNED(v, 128);
     const auto wide_divisor = _mm_set1_ps(divisor);
     for (const auto* const v_end = v + v_size_rounded_up; v < v_end; v += 4) {
@@ -40,7 +38,6 @@ void yzw2v::num::DivideVector(float* v, const uint32_t v_size, const float divis
 
 void yzw2v::num::MultiplyVector(float* v, const uint32_t v_size, const float multiple) noexcept {
     const auto v_size_rounded_up = mem::RoundSizeUpByVecSize(v_size);
-    YZ_ASSUME(v_size_rounded_up % 4 == 0);
     v = YZ_ASSUME_ALIGNED(v, 128);
     const auto wide_multiple = _mm_set1_ps(multiple);
     for (const auto* const v_end = v + v_size_rounded_up; v < v_end; v += 4) {
@@ -50,7 +47,6 @@ void yzw2v::num::MultiplyVector(float* v, const uint32_t v_size, const float mul
 
 void yzw2v::num::AddVector(float* v, const uint32_t v_size, const float* summand) noexcept {
     const auto v_size_rounded_up = mem::RoundSizeUpByVecSize(v_size);
-    YZ_ASSUME(v_size_rounded_up % 4 == 0);
     v = YZ_ASSUME_ALIGNED(v, 128);
     summand = YZ_ASSUME_ALIGNED(summand, 128);
     for (const auto* const v_end = v + v_size_rounded_up; v < v_end; summand += 4, v += 4) {
@@ -61,7 +57,6 @@ void yzw2v::num::AddVector(float* v, const uint32_t v_size, const float* summand
 void yzw2v::num::AddVector(float* v, const uint32_t v_size,
                            const float* summand, const float summand_multiple) noexcept {
     const auto v_size_rounded_up = mem::RoundSizeUpByVecSize(v_size);
-    YZ_ASSUME(v_size_rounded_up % 4 == 0);
     v = YZ_ASSUME_ALIGNED(v, 128);
     summand = YZ_ASSUME_ALIGNED(summand, 128);
     const auto wide_summand_multiple = _mm_set1_ps(summand_multiple);
@@ -76,7 +71,6 @@ void yzw2v::num::AddVector(float* v, const uint32_t v_size,
 float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
                                 const float* rhs) noexcept {
     const auto v_size_rounded_up = mem::RoundSizeUpByVecSize(v_size);
-    YZ_ASSUME(v_size_rounded_up % 4 == 0);
     v = YZ_ASSUME_ALIGNED(v, 128);
     rhs = YZ_ASSUME_ALIGNED(rhs, 128);
     __m128 wide_res = {};
