@@ -102,7 +102,7 @@ float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
 
     auto sum = _mm_setzero_ps();
     for (const auto* const v_end = v + ((v_end_rounded_up - v) % 16); v < v_end; v += 4, rhs += 4) {
-        sum = _mm_add_ps(sum, _mm_mul_ps(_mm_load_ps(v), _mm_load_ps(rhs)));
+        sum = _mm_add_ps(sum, _mm_dp_ps(_mm_load_ps(v), _mm_load_ps(rhs), 0b1));
     }
 
     for (; v < v_end_rounded_up; v += 16, rhs += 16) {
