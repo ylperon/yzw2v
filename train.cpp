@@ -304,8 +304,8 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             label = 0;
         }
 
-        auto* const target_row = shared_data_.syn1neg->row(target);
-        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, target_row);
+        auto* const syn1neg_row = shared_data_.syn1neg->row(target);
+        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, syn1neg_row);
 
         auto g = float{};
         if (f > MAX_EXP_FLT) {
@@ -319,12 +319,12 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
-        yzw2v::num::AddVector(neu1e_, p_.vector_size, target_row, g);
+        yzw2v::num::AddVector(neu1e_, p_.vector_size, syn1neg_row, g);
 
         next_target = shared_data_.unigram_distribution(prng_);
         yzw2v::num::Prefetch(shared_data_.syn1neg->row(next_target));
 
-        yzw2v::num::AddVector(target_row, p_.vector_size, neu1_, g);
+        yzw2v::num::AddVector(syn1neg_row, p_.vector_size, neu1_, g);
     }
 }
 
