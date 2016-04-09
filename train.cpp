@@ -266,9 +266,8 @@ void ModelTrainer::CBOWPropagateInputToHidden(const uint32_t window_begin,
 void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
     const auto token = huff_.Tokens()[sentence_[sentence_position_]];
     for (auto index = uint32_t{}; index < token.length; ++index) {
-        const auto other_token = token.point[index];
-        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size,
-                                           shared_data_.syn1hs->row(other_token));
+        auto* const syn1hs_row = shared_data_.syn1hs->row(token.point[index]);
+        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, syn1hs_row);
 
         if (f <= -MAX_EXP_FLT || f >= MAX_EXP_FLT) {
             continue;
@@ -280,8 +279,8 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
         }
 
         const auto g = (1.0f - token.code[index] - f) * shared_data_.alpha;
-        yzw2v::num::AddVector(neu1e_, p_.vector_size, shared_data_.syn1hs->row(other_token), g);
-        yzw2v::num::AddVector(shared_data_.syn1hs->row(other_token), p_.vector_size, neu1e_, g);
+        yzw2v::num::AddVector(neu1e_, p_.vector_size, syn1hs_row, g);
+        yzw2v::num::AddVector(syn1hs_row, p_.vector_size, neu1e_, g);
     }
 }
 
