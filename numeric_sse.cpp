@@ -71,12 +71,25 @@ void yzw2v::num::AddVector(float* v, const uint32_t v_size,
 float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
                                 const float* rhs) noexcept {
     const auto v_size_rounded_up = mem::RoundSizeUpByVecSize(v_size);
+    const auto* const v_end_rounded_up = v + v_size_rounded_up;
     v = YZ_ASSUME_ALIGNED(v, 128);
     rhs = YZ_ASSUME_ALIGNED(rhs, 128);
-    __m128 wide_res = {};
-    for (const auto* const v_end = v + v_size_rounded_up; v < v_end; v += 4, rhs += 4) {
-        wide_res = _mm_add_ps(wide_res, _mm_mul_ps(_mm_load_ps(v), _mm_load_ps(rhs)));
+
+    __m128 wide_res[4] = {};
+    for (const auto* const v_this_end = v + (v_size_rounded_up % 16); v < v_this_end; ++v) {
+        wide_res[0] = _mm_add_ps(wide_res[0], _mm_mul_ps(_mm_load_ps(v), _mm_load_ps(rhs)));
     }
 
-    return wide_res[0] + wide_res[1] + wide_res[2] + wide_res[3];
+    for (; v < v_end_rounded_up; v += 16, rhs += 16) {
+        wide_res[0] = _mm_add_ps(wide_res[0], _mm_mul_ps(_mm_load_ps(v), _mm_load_ps(rhs)));
+        wide_res[1] = _mm_add_ps(wide_res[1], _mm_mul_ps(_mm_load_ps(v + 4), _mm_load_ps(rhs + 4)));
+        wide_res[2] = _mm_add_ps(wide_res[2], _mm_mul_ps(_mm_load_ps(v + 8), _mm_load_ps(rhs + 8)));
+        wide_res[3] = _mm_add_ps(wide_res[3], _mm_mul_ps(_mm_load_ps(v + 12), _mm_load_ps(rhs + 12)));
+    }
+
+    wide_res[0] = _mm_add_ps(wide_res[0], wide_res[1]);
+    wide_res[2] = _mm_add_ps(wide_res[2], wide_res[3]);
+    wide_res[0] = _mm_add_ps(wide_res[0], wide_res[2]);
+
+    return wide_res[0][0] + wide_res[0][1] + wide_res[0][2] + wide_res[0][3];
 }
