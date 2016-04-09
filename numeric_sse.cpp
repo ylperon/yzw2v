@@ -4,7 +4,7 @@
 #include "assume_aligned.h"
 #include "mem.h"
 
-#include <xmmintrin.h>
+#include <smmintrin.h>
 
 void yzw2v::num::Prefetch(const float* v) noexcept {
     v = YZ_ASSUME_ALIGNED(v, 128);
@@ -66,7 +66,7 @@ void yzw2v::num::AddVector(float* v, const uint32_t v_size,
                     );
     }
 }
-
+#if 0
 float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
                                 const float* rhs) noexcept {
     const auto* const v_end_rounded_up = v + mem::RoundSizeUpByVecSize(v_size);
@@ -91,4 +91,27 @@ float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
     wide_res[0] = _mm_add_ps(wide_res[0], wide_res[2]);
 
     return wide_res[0][0] + wide_res[0][1] + wide_res[0][2] + wide_res[0][3];
+}
+#endif
+
+float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
+                                const float* rhs) noexcept {
+    const auto* const v_end_rounded_up = v + mem::RoundSizeUpByVecSize(v_size);
+    v = YZ_ASSUME_ALIGNED(v, 128);
+    rhs = YZ_ASSUME_ALIGNED(rhs, 128);
+
+    auto sum = _mm_setzero_ps();
+    for (const auto* const v_end = v + ((v_end_rounded_up - v) % 16); v < v_end; v += 4, rhs += 4) {
+        sum = _mm_add_ps(sum, _mm_mul_ps(_mm_load_ps(v), _mm_load_ps(rhs)));
+    }
+
+    for (; v < v_end_rounded_up; v += 16, rhs += 16) {
+        const auto v1 = _mm_dp_ps(_mm_load_ps(v), _mm_load_ps(rhs), 0b1);
+        const auto v2 = _mm_dp_ps(_mm_load_ps(v + 4), _mm_load_ps(rhs + 4), 0b10);
+        const auto v3 = _mm_dp_ps(_mm_load_ps(v + 8), _mm_load_ps(rhs + 8), 0b100);
+        const auto v4 = _mm_dp_ps(_mm_load_ps(v + 12), _mm_load_ps(rhs + 12), 0b1000);
+        sum = _mm_add_ps(sum, _mm_set_ps(v1[0], v2[1], v3[2], v4[3]));
+    }
+
+    return sum[0] + sum[1] + sum[2] + sum[3];
 }
