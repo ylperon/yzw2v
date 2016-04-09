@@ -314,7 +314,7 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
     const auto* const negative_samples_end = negative_samples_ + negative_samples_count;
     for (const auto* sample = negative_samples_; sample < negative_samples_end; ++sample) {
         auto* const syn1neg_row = shared_data_.syn1neg->row(sample->target);
-        auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, syn1neg_row);
+        const auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, syn1neg_row);
 
         auto g = float{};
         if (f > MAX_EXP_FLT) {
