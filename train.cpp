@@ -96,9 +96,11 @@ namespace {
             : p_{params}
             , neu1_holder_{yzw2v::mem::AllocateFloatForSIMD(params.vector_size)}
             , neu1e_holder_{yzw2v::mem::AllocateFloatForSIMD(params.vector_size)}
+            , negative_samples_holder_{new NegativeSample[params.negative_samples_count + 1]}
             , shared_data_{shared_data}
             , neu1_{neu1_holder_.get()}
             , neu1e_{neu1e_holder_.get()}
+            , negative_samples_{negative_samples_holder_.get()}
             , vocab_{vocab}
             , huff_{huffman_tree}
             , prng_{seed}
@@ -125,13 +127,20 @@ namespace {
         uint32_t WindowEnd(const uint32_t window_indent) const noexcept;
 
     private:
+        struct NegativeSample {
+            uint32_t target;
+            float label;
+        };
+
         const yzw2v::train::Params p_;
         const std::unique_ptr<float, yzw2v::mem::detail::Deleter> neu1_holder_;
         const std::unique_ptr<float, yzw2v::mem::detail::Deleter> neu1e_holder_;
+        const std::unique_ptr<NegativeSample[]> negative_samples_holder_;
 
         SharedData& shared_data_;
         float* const neu1_;
         float* const neu1e_;
+        NegativeSample* const negative_samples_;
 
         const yzw2v::vocab::Vocabulary& vocab_;
         const yzw2v::huff::HuffmanTree& huff_;
@@ -285,45 +294,49 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
 }
 
 void ModelTrainer::CBOWApplyNegativeSampling() {
-    const auto cur_token = sentence_[sentence_position_];
-    auto next_target = uint32_t{};
-    for (auto index = uint32_t{}; index < p_.negative_samples_count + 1; ++index) {
-        auto target = next_target;
-        auto label = float{};
-        if (0 == index) {
-            target = cur_token;
-            label = 1;
-        } else {
-            shared_data_.unigram_distribution.prefetch(prng_);
-            if (cur_token == target) {
-                next_target = shared_data_.unigram_distribution(prng_);
-                yzw2v::num::Prefetch(shared_data_.syn1neg->row(next_target));
-                continue;
+    const auto negative_samples_count = [this]{
+        const auto cur_token = sentence_[sentence_position_];
+        auto res = uint32_t{};
+        for (auto index = uint32_t{}; index < p_.negative_samples_count + 1; ++index) {
+            auto target = uint32_t{};
+            auto label = float{};
+            if (0 == index) {
+                target = cur_token;
+                label = 1.0;
+            } else {
+                target = shared_data_.unigram_distribution(prng_);
+                if (cur_token == target) {
+                    continue;
+                }
+
+                label = 0;
             }
 
-            label = 0;
+            negative_samples_[res++] = {target, label};
         }
 
-        auto* const syn1neg_row = shared_data_.syn1neg->row(target);
+        return res;
+    }();
+
+
+    const auto* const negative_samples_end = negative_samples_ + negative_samples_count;
+    for (const auto* sample = negative_samples_; sample < negative_samples_end; ++sample) {
+        auto* const syn1neg_row = shared_data_.syn1neg->row(sample->target);
         auto f = yzw2v::num::ScalarProduct(neu1_, p_.vector_size, syn1neg_row);
 
         auto g = float{};
         if (f > MAX_EXP_FLT) {
-            g = (label - 1.0f) * shared_data_.alpha;
+            g = (sample->label - 1.0f) * shared_data_.alpha;
         } else if (f < -MAX_EXP_FLT) {
-            g = (label - 0.0f) * shared_data_.alpha;
+            g = (sample->label - 0.0f) * shared_data_.alpha;
         } else {
             const auto exp_index = static_cast<uint32_t>(
                     (f + MAX_EXP_FLT) * (EXP_TABLE_SIZE / MAX_EXP / 2)
                     );
-            g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
+            g = (sample->label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
         yzw2v::num::AddVector(neu1e_, p_.vector_size, syn1neg_row, g);
-
-        next_target = shared_data_.unigram_distribution(prng_);
-        yzw2v::num::Prefetch(shared_data_.syn1neg->row(next_target));
-
         yzw2v::num::AddVector(syn1neg_row, p_.vector_size, neu1_, g);
     }
 }
