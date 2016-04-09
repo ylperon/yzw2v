@@ -89,6 +89,7 @@ float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
 
     wide_res[0] = _mm_add_ps(wide_res[0], wide_res[1]);
     wide_res[2] = _mm_add_ps(wide_res[2], wide_res[3]);
+
     wide_res[0] = _mm_add_ps(wide_res[0], wide_res[2]);
 
     return wide_res[0][0] + wide_res[0][1] + wide_res[0][2] + wide_res[0][3];
