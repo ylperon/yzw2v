@@ -28,7 +28,7 @@ yzw2v::io::BinaryBufferedWriteProxy::BinaryBufferedWriteProxy(std::ostream& slav
 }
 
 void yzw2v::io::BinaryBufferedWriteProxy::Write(const void* const data, const size_t data_size) {
-    const auto* data_cur = static_cast<const uint32_t*>(data);
+    const auto* data_cur = static_cast<const uint8_t*>(data);
     auto data_left = data_size;
 
     while (data_left > buf_left_) {
