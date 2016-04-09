@@ -66,7 +66,7 @@ void yzw2v::num::AddVector(float* v, const uint32_t v_size,
                     );
     }
 }
-#if 0
+
 float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
                                 const float* rhs) noexcept {
     const auto* const v_end_rounded_up = v + mem::RoundSizeUpByVecSize(v_size);
@@ -92,8 +92,8 @@ float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
 
     return wide_res[0][0] + wide_res[0][1] + wide_res[0][2] + wide_res[0][3];
 }
-#endif
 
+#if 0
 float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
                                 const float* rhs) noexcept {
     const auto* const v_end_rounded_up = v + mem::RoundSizeUpByVecSize(v_size);
@@ -115,3 +115,4 @@ float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
 
     return sum[0] + sum[1] + sum[2] + sum[3];
 }
+#endif
