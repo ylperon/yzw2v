@@ -76,7 +76,7 @@ float yzw2v::num::ScalarProduct(const float* v, const uint32_t v_size,
     rhs = YZ_ASSUME_ALIGNED(rhs, 128);
 
     __m128 wide_res[4] = {};
-    for (const auto* const v_this_end = v + (v_size_rounded_up % 16); v < v_this_end; v += 4, rhs += 4) {
+    for (const auto* const v_end = v + (v_size_rounded_up % 16); v < v_end; v += 4, rhs += 4) {
         wide_res[0] = _mm_add_ps(wide_res[0], _mm_mul_ps(_mm_load_ps(v), _mm_load_ps(rhs)));
     }
 
