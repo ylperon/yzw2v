@@ -287,16 +287,18 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
 
 void ModelTrainer::CBOWApplyNegativeSampling() {
     const auto cur_token = sentence_[sentence_position_];
+    auto next_target = uint32_t{};
     for (auto index = uint32_t{}; index < p_.negative_samples_count + 1; ++index) {
-        auto target = uint32_t{};
+        auto target = next_target;
         auto label = float{};
         if (0 == index) {
             target = cur_token;
             label = 1;
         } else {
-            target = shared_data_.unigram_distribution(prng_);
             shared_data_.unigram_distribution.prefetch(prng_);
             if (cur_token == target) {
+                next_target = shared_data_.unigram_distribution(prng_);
+                yzw2v::num::Prefetch(shared_data_.syn1neg->row(next_target));
                 continue;
             }
 
@@ -319,7 +321,10 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
         }
 
         yzw2v::num::AddVector(neu1e_, p_.vector_size, target_row, g);
-        yzw2v::num::Prefetch(shared_data_.syn1neg->row(shared_data_.unigram_distribution.next(prng_)));
+
+        next_target = shared_data_.unigram_distribution(prng_);
+        yzw2v::num::Prefetch(shared_data_.syn1neg->row(next_target));
+
         yzw2v::num::AddVector(target_row, p_.vector_size, neu1_, g);
     }
 }
