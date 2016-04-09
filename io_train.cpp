@@ -56,7 +56,7 @@ void yzw2v::train::WriteModelBinary(const std::string& path,
     for (auto i = uint32_t{}; i < model.vocabulary_size; ++i) {
         proxy.Write(vocab.Token(i).token.cbegin(), vocab.Token(i).token.length());
         proxy.Write(SPACE, SPACE_LEN);
-        proxy.Write(matrix->row(i), model.vector_size);
+        proxy.Write(matrix->row(i), model.vector_size * sizeof(float));
         proxy.Write(NEW_LINE, NEW_LINE_LEN);
     }
 }
