@@ -295,7 +295,6 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             label = 1;
         } else {
             target = shared_data_.unigram_distribution(prng_);
-            shared_data_.unigram_distribution.prefetch(prng_);
             if (cur_token == target) {
                 continue;
             }
@@ -318,7 +317,9 @@ void ModelTrainer::CBOWApplyNegativeSampling() {
             g = (label - shared_data_.exp_table[exp_index]) * shared_data_.alpha;
         }
 
+        shared_data_.unigram_distribution.prefetch(prng_);
         yzw2v::num::AddVector(neu1e_, p_.vector_size, target_row, g);
+        yzw2v::num::Prefetch(shared_data_.syn1neg->row(shared_data_.unigram_distribution.next(prng_)));
         yzw2v::num::AddVector(target_row, p_.vector_size, neu1_, g);
     }
 }
