@@ -141,13 +141,11 @@ void yzw2v::vocab::ReadBinaryWithFilter(const std::string& path, const uint32_t 
 void yzw2v::vocab::Vocabulary::ReadBinaryWithFilter(const std::string& path,
                                                     const uint32_t min_token_freq,
                                                     Vocabulary& vocab) {
-    std::ifstream in{path, std::ios::binary | std::ios::ate};
+    const auto in_size = io::FileSize(path);
+    std::ifstream in{path, std::ios::binary};
     if (!in) {
         throw std::runtime_error{"failed to open file for reading"};
     }
-
-    const auto in_size = static_cast<size_t>(in.tellg());
-    in.seekg(0, std::ios::beg);
 
     static constexpr size_t BUFFER_SIZE = 1024 * 1024 * 32; // 32 Mb
     io::BinaryBufferedReadProxy proxy{in, in_size, BUFFER_SIZE};
