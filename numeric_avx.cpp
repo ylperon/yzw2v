@@ -12,6 +12,9 @@ void yzw2v::num::Prefetch(const float* v) noexcept {
     _mm_prefetch(v + 16, _MM_HINT_T0);
     _mm_prefetch(v + 24, _MM_HINT_T0);
     _mm_prefetch(v + 32, _MM_HINT_T0);
+    _mm_prefetch(v + 40, _MM_HINT_T0);
+    _mm_prefetch(v + 48, _MM_HINT_T0);
+    _mm_prefetch(v + 56, _MM_HINT_T0);
 }
 
 void yzw2v::num::Fill(float* v, const uint32_t v_size, const float value) noexcept {
