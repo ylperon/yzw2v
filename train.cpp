@@ -296,7 +296,7 @@ void ModelTrainer::CBOWApplyHierarchicalSoftmax() {
 void ModelTrainer::CBOWApplyNegativeSampling() {
     const auto negative_samples_count = [this]{
         const auto cur_token = sentence_[sentence_position_];
-        negative_samples_[0] = {cur_token, 0.0f};
+        negative_samples_[0] = {cur_token, 1.0f};
         auto res = uint32_t{1};
         for (auto i = uint32_t{}; i < p_.negative_samples_count; ++i) {
             const auto target = shared_data_.unigram_distribution(prng_);
