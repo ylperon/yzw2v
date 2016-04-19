@@ -59,7 +59,7 @@ def _plot(word2vec_threads, word2vec_times, yzw2v_threads, yzw2v_times, path, ti
     pl.plot(yzw2v_times, yzw2v_threads, label='yzw2v')
     pl.xlabel('thread count')
     pl.ylabel('training time (sec.)')
-    pl.legend(loc='lower right')
+    pl.legend(loc='upper right')
     pl.title(title)
 
     pl.savefig(path)
